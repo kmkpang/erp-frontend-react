@@ -4,8 +4,8 @@ import { config } from "@constant";
 
 const Login = () => {
 	const navigate = useNavigate();
-	const [email, setEmail] = useState("kanokwan.kmk@gmail.com");
-	const [password, setPassword] = useState("P@ssword1234!");
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [errorVisible, setErrorVisible] = useState(false);
