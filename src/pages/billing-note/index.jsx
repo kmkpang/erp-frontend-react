@@ -8,9 +8,11 @@ import BillingNoteFormModal from "@module/billing-note/billing-note-form";
 import DeleteModal from "@module/billing-note/delete-modal";
 import PDFModal from "@module/billing-note/pdf-modal";
 import SearchForm from "@module/billing-note/search-form";
+import { useAlert } from "@component/alert/alert-context";
 
 const BillingNote = () => {
 	const queryClient = useQueryClient();
+	const { success, error } = useAlert();
 
 	// Modal States
 	const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -131,10 +133,10 @@ const BillingNote = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries(["billings"]);
 			setShowDeleteModal(false);
-			alert("ลบข้อมูลสำเร็จ");
+			success("ลบข้อมูลสำเร็จ");
 		},
-		onError: (error) => {
-			alert("เกิดข้อผิดพลาดในการลบข้อมูล: " + error.message);
+		onError: (err) => {
+			error("เกิดข้อผิดพลาดในการลบข้อมูล: " + err.message, "ลบข้อมูลล้มเหลว");
 		},
 	});
 

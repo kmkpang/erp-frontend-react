@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import SearchableSelect from "@component/searchable-select";
 import DatePickerThai from "@component/date-picker-thai";
 import { config } from "@constant";
+import { useAlert } from "@component/alert/alert-context";
 
 const getInitialFormState = () => ({
 	sale_number: "QT",
@@ -38,6 +39,7 @@ const QuotationFormModal = ({
 	businessData,
 }) => {
 	const queryClient = useQueryClient();
+	const { success, error } = useAlert();
 	const [formData, setFormData] = useState(() => {
 		if (initialData && isEditMode) {
 			const total = initialData.details.reduce((sum, p) => sum + (parseFloat(p.sale_price) || 0), 0);
@@ -141,10 +143,10 @@ const QuotationFormModal = ({
 		onSuccess: () => {
 			queryClient.invalidateQueries(["quotations"]);
 			onClose();
-			alert("เพิ่มข้อมูลสำเร็จ");
+			success("เพิ่มข้อมูลสำเร็จ");
 		},
-		onError: (error) => {
-			alert(error.message);
+		onError: (err) => {
+			error(err.message, "เพิ่มข้อมูลล้มเหลว");
 		},
 	});
 
@@ -242,10 +244,10 @@ const QuotationFormModal = ({
 		onSuccess: () => {
 			queryClient.invalidateQueries(["quotations"]);
 			onClose();
-			alert("แก้ไขข้อมูลสำเร็จ");
+			success("แก้ไขข้อมูลสำเร็จ");
 		},
-		onError: (error) => {
-			alert("เกิดข้อผิดพลาดในการแก้ไขข้อมูล: " + error.message);
+		onError: (err) => {
+			error("เกิดข้อผิดพลาดในการแก้ไขข้อมูล: " + err.message, "แก้ไขข้อมูลล้มเหลว");
 		},
 	});
 

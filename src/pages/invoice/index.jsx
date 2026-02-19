@@ -8,9 +8,11 @@ import InvoiceFormModal from "@module/invoice/invoice-form";
 import DeleteModal from "@module/invoice/delete-modal";
 import PDFModal from "@module/invoice/pdf-modal";
 import SearchForm from "@module/invoice/search-form";
+import { useAlert } from "@component/alert/alert-context";
 
 const Invoice = () => {
 	const queryClient = useQueryClient();
+	const { success, error } = useAlert();
 
 	// Modal States
 	const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -140,10 +142,10 @@ const Invoice = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries(["invoices"]);
 			setShowDeleteModal(false);
-			alert("ลบข้อมูลสำเร็จ");
+			success("ลบข้อมูลสำเร็จ");
 		},
-		onError: (error) => {
-			alert("เกิดข้อผิดพลาดในการลบข้อมูล: " + error.message);
+		onError: (err) => {
+			error("เกิดข้อผิดพลาดในการลบข้อมูล: " + err.message, "ลบข้อมูลล้มเหลว");
 		},
 	});
 

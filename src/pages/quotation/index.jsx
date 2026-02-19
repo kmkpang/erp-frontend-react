@@ -8,9 +8,11 @@ import QuotationFormModal from "@module/quotation/quotation-form";
 import DeleteModal from "@module/quotation/delete-modal";
 import PDFModal from "@module/quotation/pdf-modal";
 import SearchForm from "@module/quotation/search-form";
+import { useAlert } from "@component/alert/alert-context";
 
 const Quotation = () => {
 	const queryClient = useQueryClient();
+	const { success, error } = useAlert();
 
 	// Modal States
 	const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -138,10 +140,10 @@ const Quotation = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries(["quotations"]);
 			setShowDeleteModal(false);
-			alert("ลบข้อมูลสำเร็จ");
+			success("ลบข้อมูลสำเร็จ");
 		},
-		onError: (error) => {
-			alert("เกิดข้อผิดพลาดในการลบข้อมูล: " + error.message);
+		onError: (err) => {
+			error("เกิดข้อผิดพลาดในการลบข้อมูล: " + err.message, "ลบข้อมูลล้มเหลว");
 		},
 	});
 

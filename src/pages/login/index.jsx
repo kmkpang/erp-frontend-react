@@ -1,21 +1,21 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { config } from "@constant";
+import { useAlert } from "@component/alert/alert-context";
 
 const Login = () => {
 	const navigate = useNavigate();
+	const { success, error } = useAlert();
+
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [showPassword, setShowPassword] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-	const [errorVisible, setErrorVisible] = useState(false);
-	const [errorMessage, setErrorMessage] = useState("");
 
 	const handleLogin = async (e) => {
 		e.preventDefault();
 		if (!email || !password) {
-			setErrorMessage("Please enter email and password");
-			setErrorVisible(true);
+			error("กรุณากรอกอีเมลและรหัสผ่าน", "ข้อมูลไม่ครบถ้วน");
 			return;
 		}
 
@@ -45,20 +45,16 @@ const Login = () => {
 				localStorage.setItem("userEmail", email.toLowerCase().trim());
 				localStorage.setItem("lang", "th"); // Default language
 
+				success("เข้าสู่ระบบสำเร็จ");
 				navigate("/home");
 			} else {
-				setErrorMessage(data.data || "Login failed");
-				setErrorVisible(true);
+				error(data.data || "เข้าสู่ระบบไม่สำเร็จ", "เกิดข้อผิดพลาด");
 			}
 		} catch (err) {
 			console.error(err);
-			setErrorMessage("Network error");
-			setErrorVisible(true);
+			error("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", "เครือข่ายขัดข้อง");
 		} finally {
 			setIsLoading(false);
-			if (errorVisible) {
-				setTimeout(() => setErrorVisible(false), 3000);
-			}
 		}
 	};
 
@@ -141,21 +137,6 @@ const Login = () => {
 					</div>
 				</form>
 			</div>
-
-			{errorVisible && (
-				<div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 1050 }}>
-					<div className="toast show align-items-center text-white bg-danger border-0">
-						<div className="d-flex">
-							<div className="toast-body">{errorMessage}</div>
-							<button
-								type="button"
-								className="btn-close btn-close-white me-2 m-auto"
-								onClick={() => setErrorVisible(false)}
-							></button>
-						</div>
-					</div>
-				</div>
-			)}
 		</div>
 	);
 };

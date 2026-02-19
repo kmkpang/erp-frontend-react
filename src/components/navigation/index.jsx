@@ -126,7 +126,6 @@ const Navigation = () => {
 			{/* Top Navbar */}
 			<nav
 				className="navbar navbar-expand-sm fixed-top bg-white border-bottom"
-				style={{ zIndex: 1000 }}
 			>
 				<div className="container-fluid">
 					<div className="d-flex align-items-center">

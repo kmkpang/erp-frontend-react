@@ -3,6 +3,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import SearchableSelect from "@component/searchable-select";
 import DatePickerThai from "@component/date-picker-thai";
 import { config } from "@constant";
+import { useAlert } from "@component/alert/alert-context";
 
 const getInitialFormState = () => ({
 	billing_number: "HD",
@@ -40,6 +41,7 @@ const BillingNoteFormModal = ({
 	productOptions,
 }) => {
 	const queryClient = useQueryClient();
+	const { success, error } = useAlert();
 	const [sourceType, setSourceType] = useState("none"); // none, quotation, invoice
 
 	// Fetch Pending Quotations
@@ -240,10 +242,10 @@ const BillingNoteFormModal = ({
 		onSuccess: () => {
 			queryClient.invalidateQueries(["billings"]);
 			onClose();
-			alert("เพิ่มข้อมูลสำเร็จ");
+			success("เพิ่มข้อมูลสำเร็จ");
 		},
-		onError: (error) => {
-			alert(error.message);
+		onError: (err) => {
+			error(err.message, "เพิ่มข้อมูลล้มเหลว");
 		},
 	});
 
@@ -278,10 +280,10 @@ const BillingNoteFormModal = ({
 		onSuccess: () => {
 			queryClient.invalidateQueries(["billings"]);
 			onClose();
-			alert("แก้ไขข้อมูลสำเร็จ");
+			success("แก้ไขข้อมูลสำเร็จ");
 		},
-		onError: (error) => {
-			alert("เกิดข้อผิดพลาดในการแก้ไขข้อมูล: " + error.message);
+		onError: (err) => {
+			error("เกิดข้อผิดพลาดในการแก้ไขข้อมูล: " + err.message, "แก้ไขข้อมูลล้มเหลว");
 		},
 	});
 
