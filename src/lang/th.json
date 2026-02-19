@@ -1,0 +1,19 @@
+{
+	"headerLang": "TH",
+	"headerQuotation": "ใบเสนอราคา",
+	"headerProduct": "สินค้าและบริการ",
+	"headerCustomer": "ข้อมูลบริษัท/ลูกค้า",
+	"headerCategory": "หมวดหมู่",
+	"headerRole": "สิทธิ์ผู้ใช้งาน",
+	"headerAbout": "เกี่ยวกับธุรกิจ",
+	"headerBilling": "ใบเสร็จรับเงิน/ใบกำกับภาษี",
+	"descAbout": "จัดการข้อมูลเกี่ยวกับธุรกิจ",
+	"descCustomer": "จัดการข้อมูลลูกค้า",
+	"descQuotation": "จัดการใบเสนอราคา",
+	"descProduct": "จัดการข้อมูลสินค้า",
+	"descBilling": "จัดการใบเสร็จรับเงิน/ใบกำกับภาษี",
+	"login": "เข้าสู่ระบบ",
+	"email": "อีเมล:",
+	"password": "รหัสผ่าน:",
+	"forgetpassword": "ลืมรหัสผ่าน"
+}

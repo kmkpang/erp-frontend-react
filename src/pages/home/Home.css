@@ -1,0 +1,224 @@
+.main-page {
+	min-height: 100vh;
+}
+
+.section-title {
+	font-size: 28px;
+	font-weight: 700;
+	color: #495057;
+	border-left: 6px solid #4facfe;
+	padding-left: 15px;
+	margin-bottom: 20px;
+}
+
+.shortcut-card {
+	background: white;
+	border-radius: 20px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+	padding: 30px;
+	display: flex;
+	align-items: center;
+	position: relative;
+	overflow: hidden;
+	cursor: pointer;
+	transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+	height: 100%;
+}
+
+.shortcut-card:hover {
+	transform: translateY(-8px);
+	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+.icon-wrapper {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-right: 25px;
+	z-index: 2;
+	flex-shrink: 0;
+}
+
+.icon-wrapper .mdi {
+	font-size: 36px;
+	color: white;
+}
+
+.card-info {
+	display: flex;
+	flex-direction: column;
+	z-index: 2;
+}
+
+.card-title {
+	font-size: 22px;
+	font-weight: 700;
+	color: #2c3e50;
+	margin: 0 0 8px 0;
+}
+
+.card-desc {
+	font-size: 15px;
+	color: #7f8c8d;
+}
+
+/* Specific Card Styles */
+/* Quotation Card - Indigo Gradient */
+.card-quotation .icon-wrapper {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+}
+
+.card-quotation .card-decoration {
+	position: absolute;
+	top: -20px;
+	right: -20px;
+	width: 120px;
+	height: 120px;
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	opacity: 0.1;
+	border-radius: 50%;
+	z-index: 1;
+}
+
+.card-quotation:hover .card-title {
+	color: #667eea;
+}
+
+/* Billing Card - Blue/Cyan Gradient */
+.card-billing .icon-wrapper {
+	background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+	box-shadow: 0 8px 16px rgba(79, 172, 254, 0.3);
+}
+
+.card-billing .card-decoration {
+	position: absolute;
+	top: -20px;
+	right: -20px;
+	width: 120px;
+	height: 120px;
+	background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+	opacity: 0.1;
+	border-radius: 50%;
+	z-index: 1;
+}
+
+.card-billing:hover .card-title {
+	color: #007bff;
+}
+
+/* Product Card - Orange/Yellow Gradient */
+.card-product .icon-wrapper {
+	background: linear-gradient(135deg, #ff8008 0%, #ffc837 100%);
+	box-shadow: 0 8px 16px rgba(255, 128, 8, 0.3);
+}
+
+.card-product .card-decoration {
+	position: absolute;
+	top: -20px;
+	right: -20px;
+	width: 120px;
+	height: 120px;
+	background: linear-gradient(135deg, #ff8008 0%, #ffc837 100%);
+	opacity: 0.1;
+	border-radius: 50%;
+	z-index: 1;
+}
+
+.card-product:hover .card-title {
+	color: #e67e22;
+}
+
+/* Customer Card - Green/Teal Gradient */
+.card-customer .icon-wrapper {
+	background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+	box-shadow: 0 8px 16px rgba(17, 153, 142, 0.3);
+}
+
+.card-customer .card-decoration {
+	position: absolute;
+	top: -20px;
+	right: -20px;
+	width: 120px;
+	height: 120px;
+	background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+	opacity: 0.1;
+	border-radius: 50%;
+	z-index: 1;
+}
+
+.card-customer:hover .card-title {
+	color: #11998e;
+}
+
+/* About Card - Purple Gradient */
+.card-about .icon-wrapper {
+	background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+	box-shadow: 0 8px 16px rgba(142, 45, 226, 0.3);
+}
+
+.card-about .card-decoration {
+	position: absolute;
+	top: -20px;
+	right: -20px;
+	width: 120px;
+	height: 120px;
+	background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+	opacity: 0.1;
+	border-radius: 50%;
+	z-index: 1;
+}
+
+.card-about:hover .card-title {
+	color: #8e2de2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+	.shortcut-card {
+		padding: 20px;
+	}
+
+	.icon-wrapper {
+		width: 60px;
+		height: 60px;
+		margin-right: 15px;
+	}
+
+	.icon-wrapper .mdi {
+		font-size: 28px;
+	}
+
+	.card-title {
+		font-size: 18px;
+	}
+
+	.section-title {
+		font-size: 24px;
+	}
+}
+
+/* Invoice Card - Pink/Red Gradient */
+.card-invoice .icon-wrapper {
+	background: linear-gradient(135deg, #f77062 0%, #fe5196 100%);
+	box-shadow: 0 8px 16px rgba(254, 81, 150, 0.3);
+}
+
+.card-invoice .card-decoration {
+	position: absolute;
+	top: -20px;
+	right: -20px;
+	width: 120px;
+	height: 120px;
+	background: linear-gradient(135deg, #f77062 0%, #fe5196 100%);
+	opacity: 0.1;
+	border-radius: 50%;
+	z-index: 1;
+}
+
+.card-invoice:hover .card-title {
+	color: #fe5196;
+}

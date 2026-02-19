@@ -1,0 +1,42 @@
+.sidebar {
+	position: fixed;
+	top: 56px; /* Height of navbar */
+	left: -250px;
+	width: 250px;
+	height: calc(100vh - 56px);
+	overflow-y: auto;
+	transition: left 0.3s ease;
+	z-index: 900;
+	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.open {
+	left: 0;
+}
+
+.sidebar-overlay {
+	position: fixed;
+	top: 56px;
+	left: 0;
+	width: 100vw;
+	height: calc(100vh - 56px);
+	background: rgba(0, 0, 0, 0.3);
+	z-index: 800;
+}
+
+/* Adjust main content when sidebar is open if desired, or just overlay */
+/* For this design, we might want to push content or just overlay. 
+   Vue version seems to push or just cover. */
+
+.nav-link {
+	color: #333;
+}
+
+.nav-link.active {
+	color: #0d6efd;
+	font-weight: bold;
+}
+
+.nav-link:hover {
+	background-color: #f8f9fa;
+}

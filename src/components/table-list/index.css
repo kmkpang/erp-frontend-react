@@ -1,0 +1,15 @@
+.orange-text {
+	color: orange;
+}
+.green-text {
+	color: green;
+}
+.red-text {
+	color: rgb(255, 0, 0);
+}
+.icon-table {
+	cursor: pointer;
+}
+.pointer {
+	cursor: pointer;
+}
