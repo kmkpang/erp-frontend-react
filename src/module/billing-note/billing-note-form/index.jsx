@@ -16,7 +16,7 @@ const getInitialFormState = () => ({
 	productForms: [],
 	remark: "",
 	vatType: "non-vat", // non-vat, included-vat, excluded-vat
-	payment_method: "เงินโอน", // เงินสด, เงินโอน, เช็ค
+	payment_method: "เงินสด", // เงินสด, เงินโอน, เช็ค
 	total_price: 0,
 	vat: 0,
 	grand_total: 0,
@@ -25,6 +25,7 @@ const getInitialFormState = () => ({
 	pay_branch: "",
 	pay_date: new Date().toISOString().slice(0, 10),
 	pay_time: "",
+	pay_image_url: "",
 	amount_text: "",
 	bus_id: localStorage.getItem("@bus_id"),
 	employeeID: localStorage.getItem("user_id"),
@@ -122,6 +123,7 @@ const BillingNoteFormModal = ({
 				})),
 				billing_date: initialData.billing_date ? initialData.billing_date.slice(0, 10) : "",
 				pay_date: initialData.pay_date ? initialData.pay_date.slice(0, 10) : "",
+				pay_image_url: initialData.pay_image_url || "",
 				payment_method: initialData.payment_method || initialData.payments || "เงินสด",
 				cus_id: initialData.cus_id || "",
 				bus_id: initialData.bus_id || localStorage.getItem("@bus_id"),
@@ -208,6 +210,7 @@ const BillingNoteFormModal = ({
 				pay_number: newData.pay_number,
 				pay_branch: newData.pay_branch,
 				pay_date: newData.pay_date ? new Date(newData.pay_date).toISOString().split("T")[0] : "",
+				pay_image_url: newData.pay_image_url,
 				remark: newData.remark,
 				sale_totalprice: newData.total_price,
 				vatType: newData.vatType,
@@ -264,6 +267,7 @@ const BillingNoteFormModal = ({
 				payments: updatedData.payment_method,
 				sale_totalprice: updatedData.total_price,
 				products: products,
+				pay_image_url: updatedData.pay_image_url,
 			};
 
 			const res = await fetch(`${config.url}/Billing/editBilling/${idEditing}`, {
@@ -290,6 +294,32 @@ const BillingNoteFormModal = ({
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const [isUploadingImage, setIsUploadingImage] = useState(false);
+	const handleImageUpload = async (e) => {
+		const file = e.target.files[0];
+		if (!file) return;
+
+		const formDataUpload = new FormData();
+		formDataUpload.append("file", file);
+
+		setIsUploadingImage(true);
+		try {
+			const res = await fetch(`${config.url}/Billing/uploadSlipImage`, {
+				method: "POST",
+				body: formDataUpload,
+			});
+			const json = await res.json();
+			if (!res.ok) throw new Error(json.message || "Failed to upload image");
+			
+			setFormData((prev) => ({ ...prev, pay_image_url: json.data.pay_image_url }));
+			success("อัพโหลดรูปภาพสำเร็จ");
+		} catch (err) {
+			error(err.message, "อัพโหลดรูปล้มเหลว");
+		} finally {
+			setIsUploadingImage(false);
+		}
 	};
 
 	const handleCustomerChange = (e) => {
@@ -810,7 +840,7 @@ const BillingNoteFormModal = ({
 														name="pay_number"
 														value={formData.pay_number}
 														onChange={handleInputChange}
-														placeholder="เลขที่บัญชี"
+														placeholder="เลขที่ทำรายการ"
 													/>
 												</div>
 											</div>
@@ -849,6 +879,27 @@ const BillingNoteFormModal = ({
 														value={formData.pay_time}
 														onChange={handleInputChange}
 													/>
+												</div>
+											</div>
+											<div className="mb-3 row">
+												<label className="col-sm-3 col-form-label">รูปสลิปเงินโอน:</label>
+												<div className="col-sm-9">
+													<input
+														type="file"
+														className="form-control"
+														accept="image/png, image/jpeg"
+														onChange={handleImageUpload}
+													/>
+													{isUploadingImage && <span className="text-primary mt-2 d-inline-block">กำลังอัปโหลด...</span>}
+													{formData.pay_image_url && !isUploadingImage && (
+														<div className="mt-3">
+															<img
+																src={formData.pay_image_url}
+																alt="Slip"
+																style={{ maxWidth: "200px", borderRadius: "8px", border: "1px solid #ddd" }}
+															/>
+														</div>
+													)}
 												</div>
 											</div>
 										</div>
@@ -915,6 +966,27 @@ const BillingNoteFormModal = ({
 													/>
 												</div>
 											</div>
+											<div className="mb-3 row">
+												<label className="col-sm-3 col-form-label">รูปภาพเช็ค:</label>
+												<div className="col-sm-9">
+													<input
+														type="file"
+														className="form-control"
+														accept="image/png, image/jpeg"
+														onChange={handleImageUpload}
+													/>
+													{isUploadingImage && <span className="text-primary mt-2 d-inline-block">กำลังอัปโหลด...</span>}
+													{formData.pay_image_url && !isUploadingImage && (
+														<div className="mt-3">
+															<img
+																src={formData.pay_image_url}
+																alt="Cheque"
+																style={{ maxWidth: "200px", borderRadius: "8px", border: "1px solid #ddd" }}
+															/>
+														</div>
+													)}
+												</div>
+											</div>
 										</div>
 									)}
 
@@ -939,7 +1011,7 @@ const BillingNoteFormModal = ({
 							<button type="button" className="btn btn-secondary" onClick={onClose}>
 								ยกเลิก
 							</button>
-							<button type="submit" className="btn btn-primary">
+							<button type="submit" className="btn btn-primary" disabled={isUploadingImage}>
 								{isEditMode ? "บันทึกการแก้ไข" : "บันทึก"}
 							</button>
 						</div>
