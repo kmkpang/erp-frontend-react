@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AlertProvider } from "@component/alert/alert-provider";
 import Login from "@pages/login";
+import UserManual from "@pages/user-manual";
 import Home from "@pages/home";
 import About from "@pages/about";
 import BillingNote from "@pages/billing-note";
@@ -34,6 +35,7 @@ function App() {
 				<Router>
 					<Routes>
 						<Route path="/login" element={<Login />} />
+						<Route path="/user-manual" element={<UserManual />} />
 
 						{/* Protected Routes */}
 						<Route element={<Layout />}>

@@ -54,6 +54,14 @@ const Home = () => {
 			role: ["SUPERUSER"],
 			className: "card-about",
 		},
+		{
+			title: "คู่มือการใช้งาน",
+			desc: "คู่มือการใช้งานระบบ ERP",
+			icon: "mdi-book-open-page-variant",
+			link: "/user-manual",
+			role: ["SUPERUSER", "MANAGER", "SALE", "ADMIN", "USER"],
+			className: "card-about", // Using card-about style for consistency
+		},
 	];
 
 	const userRole = localStorage.getItem("RoleName");

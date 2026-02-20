@@ -76,6 +76,11 @@ const Navigation = () => {
 				{ title: "เกี่ยวกับธุรกิจ", path: "/aboutcompany", roles: ["SUPERUSER"] },
 			],
 		},
+		{
+			title: "คู่มือการใช้งานระบบ",
+			path: "/user-manual",
+			roles: ["SUPERUSER", "ADMIN", "USER", "MANAGER", "SALE"],
+		},
 	];
 
 	const { data: businessData = { bus_name: "", bus_logo: "" } } = useQuery({

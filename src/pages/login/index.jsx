@@ -131,10 +131,16 @@ const Login = () => {
 						)}
 					</button>
 					<div className="text-center">
-						<span className="text-muted small">ยังไม่มีบัญชี? </span>
+						{/* <span className="text-muted small">ยังไม่มีบัญชี? </span>
 						<a href="/register" className="text-decoration-none small fw-bold">
 							สมัครสมาชิกตอนนี้
-						</a>
+						</a> */}
+						<div className="mt-4">
+							<a href="/user-manual" className="text-decoration-none text-secondary">
+								<span className="mdi mdi-book-open-page-variant me-1"></span>
+								คู่มือการใช้งานระบบ (User Manual)
+							</a>
+						</div>
 					</div>
 				</form>
 			</div>
