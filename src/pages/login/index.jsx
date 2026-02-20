@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
+import natureImg from "../../assets/nature-img.jpg";
 
 const Login = () => {
 	const navigate = useNavigate();
@@ -62,7 +63,7 @@ const Login = () => {
 		<div
 			className="d-flex justify-content-center align-items-center vh-100"
 			style={{
-				backgroundImage: "url('src/assets/nature-img.jpg')",
+				backgroundImage: `url(${natureImg})`,
 				backgroundSize: "cover",
 				backgroundPosition: "center",
 			}}
