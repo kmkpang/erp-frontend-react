@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { config } from "@constant";
 import ProfileModal from "./profile-modal";
+import ChangePasswordModal from "./change-password-modal";
 import "./index.css";
 
 const API_CALL = config.url;
@@ -16,6 +17,7 @@ const Navigation = () => {
 	const [searchNav, setSearchNav] = useState("");
 	const [openMenus, setOpenMenus] = useState({});
 	const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+	const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 	// Removed businessData state as it's now handled by useQuery
 
 	const sidebarRef = useRef(null);
@@ -181,6 +183,15 @@ const Navigation = () => {
 									>
 										ข้อมูลผู้ใช้งาน
 									</button>
+									<button
+										className="dropdown-item"
+										onClick={() => {
+											setIsExpandedProfile(false);
+											setIsChangePasswordModalOpen(true);
+										}}
+									>
+										เปลี่ยนรหัสผ่าน
+									</button>
 									<button className="dropdown-item text-danger" onClick={handleLogout}>
 										ออกจากระบบ
 									</button>
@@ -262,6 +273,12 @@ const Navigation = () => {
 			<ProfileModal
 				isOpen={isProfileModalOpen}
 				onClose={() => setIsProfileModalOpen(false)}
+				userId={currentUserId}
+			/>
+			
+			<ChangePasswordModal
+				isOpen={isChangePasswordModalOpen}
+				onClose={() => setIsChangePasswordModalOpen(false)}
 				userId={currentUserId}
 			/>
 		</>

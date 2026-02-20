@@ -13,20 +13,11 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 		userL_name: "",
 		userPhone: "",
 		userEmail: "",
-		userPassword: "",
 		RoleID: "",
 	});
 	const [roleName, setRoleName] = useState("");
 
-	const [editModes, setEditModes] = useState({
-		userF_name: false,
-		userL_name: false,
-		userPhone: false,
-		userEmail: false,
-		userPassword: false,
-	});
-
-	const [showPassword, setShowPassword] = useState(false);
+	const [isEditingAll, setIsEditingAll] = useState(false);
 
 	const { data: user, isLoading } = useQuery({
 		queryKey: ["userProfile", userId],
@@ -58,17 +49,10 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 				userL_name: user.userL_name || "",
 				userPhone: user.userPhone || "",
 				userEmail: user.userEmail || "",
-				userPassword: user.userPassword || "",
 				RoleID: user.RoleID || "",
 			});
 			setRoleName(user.role?.RoleName || "");
-			setEditModes({
-				userF_name: false,
-				userL_name: false,
-				userPhone: false,
-				userEmail: false,
-				userPassword: false,
-			});
+			setIsEditingAll(false);
 		}
 	}
 
@@ -99,13 +83,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 				: formData.userF_name;
 			localStorage.setItem("user_name", fullName);
 
-			setEditModes({
-				userF_name: false,
-				userL_name: false,
-				userPhone: false,
-				userEmail: false,
-				userPassword: false,
-			});
+			setIsEditingAll(false);
 		},
 		onError: (error) => {
 			showError("เกิดข้อผิดพลาดในการอัปเดต: " + error.message);
@@ -114,10 +92,6 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 
 	const handleChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
-	};
-
-	const toggleEditMode = (field) => {
-		setEditModes((prev) => ({ ...prev, [field]: !prev[field] }));
 	};
 
 	const formatPhoneNumber = (phone) => {
@@ -130,8 +104,6 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 		return phone;
 	};
 
-	const isEditingAny = Object.values(editModes).some((mode) => mode);
-
 	const handleSave = () => {
 		updateMutation.mutate(formData);
 	};
@@ -143,17 +115,10 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 				userL_name: user.userL_name || "",
 				userPhone: user.userPhone || "",
 				userEmail: user.userEmail || "",
-				userPassword: user.userPassword || "",
 				RoleID: user.RoleID || "",
 			});
 		}
-		setEditModes({
-			userF_name: false,
-			userL_name: false,
-			userPhone: false,
-			userEmail: false,
-			userPassword: false,
-		});
+		setIsEditingAll(false);
 	};
 
 	if (!isOpen) return null;
@@ -167,7 +132,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 			<div className="modal-dialog modal-dialog-centered">
 				<div className="modal-content">
 					<div className="modal-header">
-						<h5 className="modal-title">แก้ไขข้อมูลผู้ใช้งาน</h5>
+						<h5 className="modal-title">ข้อมูลผู้ใช้งาน</h5>
 						<button type="button" className="btn-close" onClick={onClose}></button>
 					</div>
 					<div className="modal-body">
@@ -182,7 +147,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 										ชื่อ:
 									</label>
 									<div className="flex-grow-1 me-2 position-relative">
-										{editModes.userF_name ? (
+										{isEditingAll ? (
 											<input
 												className="form-control"
 												name="userF_name"
@@ -193,12 +158,6 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 											<div className="form-control-plaintext">{formData.userF_name}</div>
 										)}
 									</div>
-									<button
-										className="btn btn-outline-secondary btn-sm"
-										onClick={() => toggleEditMode("userF_name")}
-									>
-										<i className="mdi mdi-pencil"></i>
-									</button>
 								</div>
 
 								<div className="mb-3 d-flex align-items-center">
@@ -206,7 +165,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 										นามสกุล:
 									</label>
 									<div className="flex-grow-1 me-2 position-relative">
-										{editModes.userL_name ? (
+										{isEditingAll ? (
 											<input
 												className="form-control"
 												name="userL_name"
@@ -217,12 +176,6 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 											<div className="form-control-plaintext">{formData.userL_name}</div>
 										)}
 									</div>
-									<button
-										className="btn btn-outline-secondary btn-sm"
-										onClick={() => toggleEditMode("userL_name")}
-									>
-										<i className="mdi mdi-pencil"></i>
-									</button>
 								</div>
 
 								<div className="mb-3 d-flex align-items-center">
@@ -230,7 +183,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 										เบอร์โทรศัพท์:
 									</label>
 									<div className="flex-grow-1 me-2 position-relative">
-										{editModes.userPhone ? (
+										{isEditingAll ? (
 											<input
 												className="form-control"
 												name="userPhone"
@@ -246,12 +199,6 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 											</div>
 										)}
 									</div>
-									<button
-										className="btn btn-outline-secondary btn-sm"
-										onClick={() => toggleEditMode("userPhone")}
-									>
-										<i className="mdi mdi-pencil"></i>
-									</button>
 								</div>
 
 								<div className="mb-3 d-flex align-items-center">
@@ -259,7 +206,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 										อีเมล:
 									</label>
 									<div className="flex-grow-1 me-2 position-relative">
-										{editModes.userEmail ? (
+										{isEditingAll ? (
 											<input
 												className="form-control"
 												name="userEmail"
@@ -271,53 +218,6 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 											<div className="form-control-plaintext">{formData.userEmail}</div>
 										)}
 									</div>
-									<button
-										className="btn btn-outline-secondary btn-sm"
-										onClick={() => toggleEditMode("userEmail")}
-									>
-										<i className="mdi mdi-pencil"></i>
-									</button>
-								</div>
-
-								<div className="mb-3 d-flex align-items-center">
-									<label className="form-label mb-0" style={{ width: "120px" }}>
-										รหัสผ่าน:
-									</label>
-									<div className="flex-grow-1 me-2 position-relative">
-										{editModes.userPassword ? (
-											<div className="position-relative">
-												<input
-													className="form-control"
-													name="userPassword"
-													type={showPassword ? "text" : "password"}
-													value={formData.userPassword}
-													onChange={handleChange}
-													style={{ paddingRight: "35px" }}
-												/>
-												<span
-													className={`mdi ${
-														showPassword ? "mdi-eye-outline" : "mdi-eye-off-outline"
-													} position-absolute`}
-													onClick={() => setShowPassword(!showPassword)}
-													style={{
-														right: "10px",
-														top: "50%",
-														transform: "translateY(-50%)",
-														cursor: "pointer",
-														color: "#6c757d",
-													}}
-												></span>
-											</div>
-										) : (
-											<div className="form-control-plaintext">********</div>
-										)}
-									</div>
-									<button
-										className="btn btn-outline-secondary btn-sm"
-										onClick={() => toggleEditMode("userPassword")}
-									>
-										<i className="mdi mdi-pencil"></i>
-									</button>
 								</div>
 
 								<div className="mb-3 d-flex align-items-center">
@@ -327,39 +227,41 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 									<div className="flex-grow-1 me-2">
 										<div className="form-control-plaintext">{roleName}</div>
 									</div>
-									<button
-										className="btn btn-sm btn-outline-secondary invisible"
-										tabIndex="-1"
-										aria-hidden="true"
-									>
-										<i className="mdi mdi-pencil"></i>
-									</button>
 								</div>
 							</>
 						)}
 
-						{isEditingAny && (
-							<div className="d-flex justify-content-end mt-4">
-								<button
-									className="btn btn-outline-secondary me-2"
-									onClick={handleCancelAll}
-									disabled={updateMutation.isPending}
-								>
-									ยกเลิก
-								</button>
+						<div className="d-flex justify-content-end mt-4">
+							{isEditingAll ? (
+								<>
+									<button
+										className="btn btn-outline-secondary me-2"
+										onClick={handleCancelAll}
+										disabled={updateMutation.isPending}
+									>
+										ยกเลิก
+									</button>
+									<button
+										className="btn btn-primary"
+										onClick={handleSave}
+										disabled={updateMutation.isPending}
+									>
+										{updateMutation.isPending ? (
+											<span className="spinner-border spinner-border-sm"></span>
+										) : (
+											"บันทึก"
+										)}
+									</button>
+								</>
+							) : (
 								<button
 									className="btn btn-primary"
-									onClick={handleSave}
-									disabled={updateMutation.isPending}
+									onClick={() => setIsEditingAll(true)}
 								>
-									{updateMutation.isPending ? (
-										<span className="spinner-border spinner-border-sm"></span>
-									) : (
-										"บันทึก"
-									)}
+									แก้ไขข้อมูล
 								</button>
-							</div>
-						)}
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
