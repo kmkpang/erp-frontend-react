@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { config } from "@constant";
+import ProfileModal from "./profile-modal";
 import "./index.css";
 
 const API_CALL = config.url;
@@ -14,6 +15,7 @@ const Navigation = () => {
 	const [isExpandedProfile, setIsExpandedProfile] = useState(false);
 	const [searchNav, setSearchNav] = useState("");
 	const [openMenus, setOpenMenus] = useState({});
+	const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 	// Removed businessData state as it's now handled by useQuery
 
 	const sidebarRef = useRef(null);
@@ -21,6 +23,7 @@ const Navigation = () => {
 
 	const userRole = localStorage.getItem("RoleName");
 	const userName = localStorage.getItem("user_name") || "User";
+	const currentUserId = localStorage.getItem("user_id");
 
 	const toggleMenu = (key) => {
 		setOpenMenus((prev) => ({
@@ -169,7 +172,13 @@ const Navigation = () => {
 							</div>
 							{isExpandedProfile && (
 								<div className="dropdown-menu show" style={{ position: "absolute", right: 0 }}>
-									<button className="dropdown-item" onClick={() => alert("Profile Popup TODO")}>
+									<button
+										className="dropdown-item"
+										onClick={() => {
+											setIsExpandedProfile(false);
+											setIsProfileModalOpen(true);
+										}}
+									>
 										ข้อมูลผู้ใช้งาน
 									</button>
 									<button className="dropdown-item text-danger" onClick={handleLogout}>
@@ -249,6 +258,12 @@ const Navigation = () => {
 			{isSidebarVisible && (
 				<div className="sidebar-overlay" onClick={() => setIsSidebarVisible(false)}></div>
 			)}
+
+			<ProfileModal
+				isOpen={isProfileModalOpen}
+				onClose={() => setIsProfileModalOpen(false)}
+				userId={currentUserId}
+			/>
 		</>
 	);
 };

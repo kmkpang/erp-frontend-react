@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import TableList from "@component/table-list";
 import { config } from "@constant";
+import { useAlert } from "@component/alert/alert-context";
+import DeleteModal from "@module/product/delete-modal";
 
 const RoleManage = () => {
 	const queryClient = useQueryClient();
@@ -12,6 +14,10 @@ const RoleManage = () => {
 		RoleName: "",
 	});
 	const [errors, setErrors] = useState({});
+
+	const { success, error: showError } = useAlert();
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [deleteRole, setDeleteRole] = useState(null);
 
 	const { data: roles = [], isLoading } = useQuery({
 		queryKey: ["roles"],
@@ -48,10 +54,10 @@ const RoleManage = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["roles"] });
 			handleClosePopup();
-			alert("เพิ่มข้อมูลสำเร็จ");
+			success("เพิ่มข้อมูลสำเร็จ");
 		},
 		onError: (error) => {
-			alert("เกิดข้อผิดพลาด: " + error.message);
+			showError("เกิดข้อผิดพลาด: " + error.message);
 		},
 	});
 
@@ -75,10 +81,10 @@ const RoleManage = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["roles"] });
 			handleClosePopup();
-			alert("แก้ไขข้อมูลสำเร็จ");
+			success("แก้ไขข้อมูลสำเร็จ");
 		},
 		onError: (error) => {
-			alert("เกิดข้อผิดพลาด: " + error.message);
+			showError("เกิดข้อผิดพลาด: " + error.message);
 		},
 	});
 
@@ -101,10 +107,11 @@ const RoleManage = () => {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["roles"] });
-			alert("ลบข้อมูลสำเร็จ");
+			success("ลบข้อมูลสำเร็จ");
+			setShowDeleteModal(false);
 		},
 		onError: (error) => {
-			alert("เกิดข้อผิดพลาดในการลบ: " + error.message);
+			showError("เกิดข้อผิดพลาดในการลบ: " + error.message);
 		},
 	});
 
@@ -126,9 +133,13 @@ const RoleManage = () => {
 	};
 
 	const handleDelete = (item) => {
-		const RoleID = item.RoleID;
-		if (window.confirm(`คุณต้องการลบสิทธิ์ "${item.RoleName}" ใช่หรือไม่?`)) {
-			deleteMutation.mutate(RoleID);
+		setDeleteRole(item);
+		setShowDeleteModal(true);
+	};
+
+	const confirmDelete = () => {
+		if (deleteRole) {
+			deleteMutation.mutate(deleteRole.RoleID);
 		}
 	};
 
@@ -252,6 +263,15 @@ const RoleManage = () => {
 						</div>
 					</div>
 				</div>
+			)}
+
+			{deleteRole && (
+				<DeleteModal
+					isOpen={showDeleteModal}
+					onClose={() => setShowDeleteModal(false)}
+					onConfirm={confirmDelete}
+					message={`คุณต้องการลบสิทธิ์ "${deleteRole.RoleName}" ใช่หรือไม่?`}
+				/>
 			)}
 		</div>
 	);

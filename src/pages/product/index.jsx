@@ -4,6 +4,7 @@ import TableList from "@component/table-list";
 import { config } from "@constant";
 import ProductFormModal from "@module/product/product-form-modal";
 import DeleteModal from "@module/product/delete-modal";
+import { useAlert } from "@component/alert/alert-context";
 
 const Product = () => {
 	const queryClient = useQueryClient();
@@ -12,6 +13,8 @@ const Product = () => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const [selectedProduct, setSelectedProduct] = useState(null);
+
+	const { success, error: showError } = useAlert();
 
 	const { data: products = [], isLoading: isProductsLoading } = useQuery({
 		queryKey: ["products"],
@@ -63,9 +66,10 @@ const Product = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries(["products"]);
 			setIsModalOpen(false);
+			success("เพิ่มสินค้าสำเร็จ");
 		},
 		onError: (error) => {
-			alert(`Error: ${error.message}`);
+			showError(`Error: ${error.message}`);
 		},
 	});
 
@@ -88,9 +92,10 @@ const Product = () => {
 			queryClient.invalidateQueries(["products"]);
 			setIsModalOpen(false);
 			setSelectedProduct(null);
+			success("แก้ไขสินค้าสำเร็จ");
 		},
 		onError: (error) => {
-			alert(`Error: ${error.message}`);
+			showError(`Error: ${error.message}`);
 		},
 	});
 
@@ -112,9 +117,10 @@ const Product = () => {
 			queryClient.invalidateQueries(["products"]);
 			setIsDeleteModalOpen(false);
 			setSelectedProduct(null);
+			success("ลบสินค้าสำเร็จ");
 		},
 		onError: (error) => {
-			alert(`Error: ${error.message}`);
+			showError(`Error: ${error.message}`);
 		},
 	});
 

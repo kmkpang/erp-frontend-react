@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import TableList from "@component/table-list";
 import { config } from "@constant";
+import { useAlert } from "@component/alert/alert-context";
+import DeleteModal from "@module/product/delete-modal";
 
 const Category = () => {
 	const queryClient = useQueryClient();
@@ -12,6 +14,10 @@ const Category = () => {
 		categoryName: "",
 	});
 	const [errors, setErrors] = useState({});
+
+	const { success, error: showError } = useAlert();
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [deleteCategory, setDeleteCategory] = useState(null);
 
 	const { data: categories = [], isLoading } = useQuery({
 		queryKey: ["categories"],
@@ -50,10 +56,10 @@ const Category = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["categories"] });
 			handleClosePopup();
-			alert("เพิ่มข้อมูลสำเร็จ");
+			success("เพิ่มข้อมูลสำเร็จ");
 		},
 		onError: (error) => {
-			alert("เกิดข้อผิดพลาด: " + error.message);
+			showError("เกิดข้อผิดพลาด: " + error.message);
 		},
 	});
 
@@ -77,10 +83,10 @@ const Category = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["categories"] });
 			handleClosePopup();
-			alert("แก้ไขข้อมูลสำเร็จ");
+			success("แก้ไขข้อมูลสำเร็จ");
 		},
 		onError: (error) => {
-			alert("เกิดข้อผิดพลาด: " + error.message);
+			showError("เกิดข้อผิดพลาด: " + error.message);
 		},
 	});
 
@@ -109,10 +115,11 @@ const Category = () => {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["categories"] });
-			alert("ลบข้อมูลสำเร็จ");
+			success("ลบข้อมูลสำเร็จ");
+			setShowDeleteModal(false);
 		},
 		onError: (error) => {
-			alert("เกิดข้อผิดพลาดในการลบ: " + error.message);
+			showError("เกิดข้อผิดพลาดในการลบ: " + error.message);
 		},
 	});
 
@@ -134,12 +141,13 @@ const Category = () => {
 	};
 
 	const handleDelete = (item) => {
-		const categoryID = item.categoryID || item.ID;
-		if (
-			window.confirm(
-				`คุณต้องการลบหมวดหมู่ "${item.categoryName || item["Category Name"]}" ใช่หรือไม่?`
-			)
-		) {
+		setDeleteCategory(item);
+		setShowDeleteModal(true);
+	};
+
+	const confirmDelete = () => {
+		const categoryID = deleteCategory.categoryID || deleteCategory.ID;
+		if (categoryID) {
 			deleteMutation.mutate(categoryID);
 		}
 	};
@@ -277,6 +285,15 @@ const Category = () => {
 						</div>
 					</div>
 				</div>
+			)}
+
+			{deleteCategory && (
+				<DeleteModal
+					isOpen={showDeleteModal}
+					onClose={() => setShowDeleteModal(false)}
+					onConfirm={confirmDelete}
+					message={`คุณต้องการลบหมวดหมู่ "${deleteCategory.categoryName || deleteCategory["Category Name"]}" ใช่หรือไม่?`}
+				/>
 			)}
 		</div>
 	);

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import TableList from "@component/table-list";
 import { config } from "@constant";
+import { useAlert } from "@component/alert/alert-context";
+import DeleteModal from "@module/product/delete-modal";
 
 const Customer = () => {
 	const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -20,6 +22,10 @@ const Customer = () => {
 		status: "active",
 	});
 	const [errors, setErrors] = useState({});
+
+	const { success, error: showError } = useAlert();
+	const [showDeleteModal, setShowDeleteModal] = useState(false);
+	const [deleteId, setDeleteId] = useState(null);
 
 	const queryClient = useQueryClient();
 
@@ -60,12 +66,12 @@ const Customer = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["customers"] });
 			setIsPopupOpen(false);
-			alert("เพิ่มข้อมูลสำเร็จ");
+			success("เพิ่มข้อมูลสำเร็จ");
 			resetForm();
 		},
-		onError: (error) => {
-			let errorMsg = error.message;
-			const errorData = error.data;
+		onError: (err) => {
+			let errorMsg = err.message;
+			const errorData = err.data;
 
 			if (typeof errorData === "string") {
 				const newErrors = {};
@@ -81,7 +87,7 @@ const Customer = () => {
 				}
 				setErrors((prev) => ({ ...prev, ...newErrors }));
 			}
-			alert("เกิดข้อผิดพลาด: " + errorMsg);
+			showError("เกิดข้อผิดพลาด: " + errorMsg);
 		},
 	});
 
@@ -108,12 +114,12 @@ const Customer = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["customers"] });
 			setIsPopupOpen(false);
-			alert("แก้ไขข้อมูลสำเร็จ");
+			success("แก้ไขข้อมูลสำเร็จ");
 			resetForm();
 		},
-		onError: (error) => {
-			let errorMsg = error.message;
-			const errorData = error.data;
+		onError: (err) => {
+			let errorMsg = err.message;
+			const errorData = err.data;
 
 			if (typeof errorData === "string") {
 				const newErrors = {};
@@ -129,7 +135,7 @@ const Customer = () => {
 				}
 				setErrors((prev) => ({ ...prev, ...newErrors }));
 			}
-			alert("เกิดข้อผิดพลาด: " + errorMsg);
+			showError("เกิดข้อผิดพลาด: " + errorMsg);
 		},
 	});
 
@@ -179,19 +185,23 @@ const Customer = () => {
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["customers"] });
-			alert("ลบข้อมูลสำเร็จ");
+			success("ลบข้อมูลสำเร็จ");
+			setShowDeleteModal(false);
 		},
-		onError: (error) => {
-			alert("เกิดข้อผิดพลาดในการลบ: " + error.message);
+		onError: (err) => {
+			showError("เกิดข้อผิดพลาดในการลบ: " + err.message);
 		},
 	});
 
 	const handleDelete = (item) => {
 		const cusId = item.ID || item.cus_id;
-		if (
-			window.confirm(`คุณต้องการลบลูกค้า "${item["Customer Name"] || item.cus_name}" ใช่หรือไม่?`)
-		) {
-			deleteMutation.mutate(cusId);
+		setDeleteId(cusId);
+		setShowDeleteModal(true);
+	};
+
+	const confirmDelete = () => {
+		if (deleteId) {
+			deleteMutation.mutate(deleteId);
 		}
 	};
 
@@ -454,6 +464,12 @@ const Customer = () => {
 					</div>
 				</div>
 			)}
+
+			<DeleteModal
+				isOpen={showDeleteModal}
+				onClose={() => setShowDeleteModal(false)}
+				onConfirm={confirmDelete}
+			/>
 		</div>
 	);
 };

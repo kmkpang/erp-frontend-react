@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { config } from "@constant";
+import { useAlert } from "@component/alert/alert-context";
 import "./About.css";
 
 const About = () => {
@@ -8,6 +9,7 @@ const About = () => {
 	const [formData, setFormData] = useState({});
 	const [imageFile, setImageFile] = useState(null);
 	const queryClient = useQueryClient();
+	const { success, error: showError } = useAlert();
 
 	// Fetch business data
 	const { data: businessData = {}, isLoading } = useQuery({
@@ -65,10 +67,10 @@ const About = () => {
 			queryClient.invalidateQueries({ queryKey: ["business"] });
 			setIsEditing(false);
 			setImageFile(null);
-			alert("บันทึกข้อมูลสำเร็จ");
+			success("บันทึกข้อมูลสำเร็จ");
 		},
 		onError: (error) => {
-			alert(`เกิดข้อผิดพลาดในการบันทึกข้อมูล: ${error.message}`);
+			showError(`เกิดข้อผิดพลาดในการบันทึกข้อมูล: ${error.message}`);
 		},
 	});
 
@@ -99,22 +101,22 @@ const About = () => {
 
 	const validateFormData = () => {
 		if (!formData.bus_name) {
-			alert("กรุณาระบุชื่อธุรกิจ");
+			showError("กรุณาระบุชื่อธุรกิจ");
 			return false;
 		}
 		if (!formData.bus_address) {
-			alert("กรุณาระบุที่อยู่");
+			showError("กรุณาระบุที่อยู่");
 			return false;
 		}
 
 		// Validate Phone
 		if (!formData.bus_tel) {
-			alert("กรุณาระบุเบอร์โทรศัพท์");
+			showError("กรุณาระบุเบอร์โทรศัพท์");
 			return false;
 		}
 		const phoneCleaned = formData.bus_tel.replace(/-/g, "");
 		if (!/^\d{9,10}$/.test(phoneCleaned)) {
-			alert("เบอร์โทรศัพท์ต้องเป็นตัวเลข 9-10 หลัก");
+			showError("เบอร์โทรศัพท์ต้องเป็นตัวเลข 9-10 หลัก");
 			return false;
 		}
 
@@ -122,7 +124,7 @@ const About = () => {
 		if (formData.bus_tax) {
 			const taxCleaned = formData.bus_tax.replace(/-/g, "");
 			if (!/^\d{13}$/.test(taxCleaned)) {
-				alert("เลขประจำตัวผู้เสียภาษีต้องเป็นตัวเลข 13 หลัก");
+				showError("เลขประจำตัวผู้เสียภาษีต้องเป็นตัวเลข 13 หลัก");
 				return false;
 			}
 		}
@@ -132,7 +134,7 @@ const About = () => {
 		if (bankNumber) {
 			const bankCleaned = bankNumber.replace(/-/g, "");
 			if (!/^\d{10,15}$/.test(bankCleaned)) {
-				alert("เลขที่บัญชีต้องเป็นตัวเลข 10-15 หลัก");
+				showError("เลขที่บัญชีต้องเป็นตัวเลข 10-15 หลัก");
 				return false;
 			}
 		}
