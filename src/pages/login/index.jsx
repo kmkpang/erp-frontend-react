@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
 import natureImg from "../../assets/nature-img.jpg";
+import { fetchApi } from "@utils/api";
 
 const Login = () => {
 	const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Login = () => {
 
 		setIsLoading(true);
 		try {
-			const response = await fetch(`${config.url}/auth/login`, {
+			const response = await fetchApi(`${config.url}/auth/login`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({

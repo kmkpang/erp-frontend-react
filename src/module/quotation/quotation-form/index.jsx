@@ -4,6 +4,7 @@ import SearchableSelect from "@component/searchable-select";
 import DatePickerThai from "@component/date-picker-thai";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
+import { fetchApi } from "@utils/api";
 
 const getInitialFormState = () => ({
 	sale_number: "QT",
@@ -126,7 +127,7 @@ const QuotationFormModal = ({
 				products: products,
 			};
 
-			const res = await fetch(`${config.url}/Quotation/addQuotationSale`, {
+			const res = await fetchApi(`${config.url}/Quotation/addQuotationSale`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -230,7 +231,7 @@ const QuotationFormModal = ({
 				products: products,
 			};
 
-			const res = await fetch(`${config.url}/Quotation/editQuotationSale/${idEditing}`, {
+			const res = await fetchApi(`${config.url}/Quotation/editQuotationSale/${idEditing}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",

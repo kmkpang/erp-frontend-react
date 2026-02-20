@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
+import { fetchApi } from "@utils/api";
 import "./About.css";
 
 const About = () => {
@@ -16,7 +17,7 @@ const About = () => {
 		queryKey: ["business"],
 		queryFn: async () => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/Quotation/getBusinessByID`, {
+			const response = await fetchApi(`${config.url}/Quotation/getBusinessByID`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await response.json();
@@ -49,7 +50,7 @@ const About = () => {
 			formDataBusiness.append("bank_id", data.bank_id || "");
 
 			const busID = data.bus_id;
-			const response = await fetch(`${config.url}/Quotation/editBusiness/${busID}`, {
+			const response = await fetchApi(`${config.url}/Quotation/editBusiness/${busID}`, {
 				method: "PUT",
 				headers: {
 					Authorization: `Bearer ${token}`,

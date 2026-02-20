@@ -4,6 +4,7 @@ import SearchableSelect from "@component/searchable-select";
 import DatePickerThai from "@component/date-picker-thai";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
+import { fetchApi } from "@utils/api";
 
 const getInitialFormState = () => ({
 	billing_number: "HD",
@@ -49,7 +50,7 @@ const BillingNoteFormModal = ({
 	const { data: quotations = [] } = useQuery({
 		queryKey: ["quotations", "pending-for-billing"],
 		queryFn: async () => {
-			const res = await fetch(`${config.url}/Quotation/getQuotation`, {
+			const res = await fetchApi(`${config.url}/Quotation/getQuotation`, {
 				headers: { Authorization: `Bearer ${localStorage.getItem("@accessToken")}` },
 			});
 			const json = await res.json();
@@ -67,7 +68,7 @@ const BillingNoteFormModal = ({
 	const { data: invoices = [] } = useQuery({
 		queryKey: ["invoices", "pending-for-billing"],
 		queryFn: async () => {
-			const res = await fetch(`${config.url}/Invoice/getInvoice`, {
+			const res = await fetchApi(`${config.url}/Invoice/getInvoice`, {
 				headers: { Authorization: `Bearer ${localStorage.getItem("@accessToken")}` },
 			});
 			const json = await res.json();
@@ -219,7 +220,7 @@ const BillingNoteFormModal = ({
 				sale_id: newData.sale_id,
 			};
 
-			const res = await fetch(`${config.url}/Billing/createBilling`, {
+			const res = await fetchApi(`${config.url}/Billing/createBilling`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -270,7 +271,7 @@ const BillingNoteFormModal = ({
 				pay_image_url: updatedData.pay_image_url,
 			};
 
-			const res = await fetch(`${config.url}/Billing/editBilling/${idEditing}`, {
+			const res = await fetchApi(`${config.url}/Billing/editBilling/${idEditing}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
@@ -306,7 +307,7 @@ const BillingNoteFormModal = ({
 
 		setIsUploadingImage(true);
 		try {
-			const res = await fetch(`${config.url}/Billing/uploadSlipImage`, {
+			const res = await fetchApi(`${config.url}/Billing/uploadSlipImage`, {
 				method: "POST",
 				body: formDataUpload,
 			});

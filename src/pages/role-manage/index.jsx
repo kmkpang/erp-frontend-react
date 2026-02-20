@@ -4,6 +4,7 @@ import TableList from "@component/table-list";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
 import DeleteModal from "@module/product/delete-modal";
+import { fetchApi } from "@utils/api";
 
 const RoleManage = () => {
 	const queryClient = useQueryClient();
@@ -23,7 +24,7 @@ const RoleManage = () => {
 		queryKey: ["roles"],
 		queryFn: async () => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/auth/GetRole`, {
+			const response = await fetchApi(`${config.url}/auth/GetRole`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await response.json();
@@ -37,7 +38,7 @@ const RoleManage = () => {
 	const addMutation = useMutation({
 		mutationFn: async (newData) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/auth/AddRole`, {
+			const response = await fetchApi(`${config.url}/auth/AddRole`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -64,7 +65,7 @@ const RoleManage = () => {
 	const updateMutation = useMutation({
 		mutationFn: async (updatedData) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/auth/EditRole/${updatedData.RoleID}`, {
+			const response = await fetchApi(`${config.url}/auth/EditRole/${updatedData.RoleID}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
@@ -91,7 +92,7 @@ const RoleManage = () => {
 	const deleteMutation = useMutation({
 		mutationFn: async (RoleID) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/auth/DeleteRole/${RoleID}`, {
+			const response = await fetchApi(`${config.url}/auth/DeleteRole/${RoleID}`, {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",

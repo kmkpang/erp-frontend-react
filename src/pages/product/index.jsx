@@ -5,6 +5,7 @@ import { config } from "@constant";
 import ProductFormModal from "@module/product/product-form-modal";
 import DeleteModal from "@module/product/delete-modal";
 import { useAlert } from "@component/alert/alert-context";
+import { fetchApi } from "@utils/api";
 
 const Product = () => {
 	const queryClient = useQueryClient();
@@ -20,7 +21,7 @@ const Product = () => {
 		queryKey: ["products"],
 		queryFn: async () => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/product/getProduct`, {
+			const response = await fetchApi(`${config.url}/product/getProduct`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await response.json();
@@ -36,7 +37,7 @@ const Product = () => {
 		queryKey: ["productCategories"],
 		queryFn: async () => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/product/getCategory`, {
+			const response = await fetchApi(`${config.url}/product/getCategory`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await response.json();
@@ -51,7 +52,7 @@ const Product = () => {
 	const createMutation = useMutation({
 		mutationFn: async (formData) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/product/AddProduct`, {
+			const response = await fetchApi(`${config.url}/product/AddProduct`, {
 				method: "POST",
 				headers: { Authorization: `Bearer ${token}` },
 				body: formData,
@@ -76,7 +77,7 @@ const Product = () => {
 	const updateMutation = useMutation({
 		mutationFn: async ({ id, formData }) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/product/EditProduct/${id}`, {
+			const response = await fetchApi(`${config.url}/product/EditProduct/${id}`, {
 				method: "PUT",
 				headers: { Authorization: `Bearer ${token}` },
 				body: formData,
@@ -102,7 +103,7 @@ const Product = () => {
 	const deleteMutation = useMutation({
 		mutationFn: async (id) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/product/DeleteProduct/${id}`, {
+			const response = await fetchApi(`${config.url}/product/DeleteProduct/${id}`, {
 				method: "DELETE",
 				headers: { Authorization: `Bearer ${token}` },
 			});

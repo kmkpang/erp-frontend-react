@@ -4,6 +4,7 @@ import SearchableSelect from "@component/searchable-select";
 import DatePickerThai from "@component/date-picker-thai";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
+import { fetchApi } from "@utils/api";
 
 const getInitialFormState = () => ({
 	inv_num: "IV",
@@ -46,7 +47,7 @@ const InvoiceFormModal = ({
 		// Default to empty array
 		queryKey: ["quotations", "pending"],
 		queryFn: async () => {
-			const res = await fetch(`${config.url}/Quotation/getQuotation`, {
+			const res = await fetchApi(`${config.url}/Quotation/getQuotation`, {
 				headers: { Authorization: `Bearer ${localStorage.getItem("@accessToken")}` },
 			});
 			if (!res.ok) throw new Error("Failed to fetch quotations");
@@ -185,7 +186,7 @@ const InvoiceFormModal = ({
 				sale_id: newData.sale_id, // Include sale_id
 			};
 
-			const res = await fetch(`${config.url}/Invoice/createInvoice`, {
+			const res = await fetchApi(`${config.url}/Invoice/createInvoice`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -261,7 +262,7 @@ const InvoiceFormModal = ({
 				products: products,
 			};
 
-			const res = await fetch(`${config.url}/Invoice/editInvoice/${idEditing}`, {
+			const res = await fetchApi(`${config.url}/Invoice/editInvoice/${idEditing}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",

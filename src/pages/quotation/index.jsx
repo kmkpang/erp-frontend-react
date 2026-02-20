@@ -9,6 +9,7 @@ import DeleteModal from "@module/quotation/delete-modal";
 import PDFModal from "@module/quotation/pdf-modal";
 import SearchForm from "@module/quotation/search-form";
 import { useAlert } from "@component/alert/alert-context";
+import { fetchApi } from "@utils/api";
 
 const Quotation = () => {
 	const queryClient = useQueryClient();
@@ -40,7 +41,7 @@ const Quotation = () => {
 	const { data: getQuotationData } = useQuery({
 		queryKey: ["quotations"],
 		queryFn: async () => {
-			const res = await fetch(`${config.url}/Quotation/getQuotation`, {
+			const res = await fetchApi(`${config.url}/Quotation/getQuotation`, {
 				headers: { Authorization: `Bearer ${localStorage.getItem("@accessToken")}` },
 			});
 			if (!res.ok) throw new Error("Failed to fetch quotations");
@@ -52,7 +53,7 @@ const Quotation = () => {
 	const { data: customerQuery } = useQuery({
 		queryKey: ["customers"],
 		queryFn: async () => {
-			const res = await fetch(`${config.url}/quotation/getCustomer`, {
+			const res = await fetchApi(`${config.url}/quotation/getCustomer`, {
 				headers: { Authorization: `Bearer ${localStorage.getItem("@accessToken")}` },
 			});
 			if (!res.ok) throw new Error("Failed to fetch customers");
@@ -64,7 +65,7 @@ const Quotation = () => {
 	const { data: productQuery } = useQuery({
 		queryKey: ["products"],
 		queryFn: async () => {
-			const res = await fetch(`${config.url}/product/getProduct`, {
+			const res = await fetchApi(`${config.url}/product/getProduct`, {
 				headers: { Authorization: `Bearer ${localStorage.getItem("@accessToken")}` },
 			});
 			if (!res.ok) throw new Error("Failed to fetch products");
@@ -76,7 +77,7 @@ const Quotation = () => {
 	const { data: businessQuery } = useQuery({
 		queryKey: ["business-quotation"],
 		queryFn: async () => {
-			const res = await fetch(`${config.url}/quotation/getBusinessByID`, {
+			const res = await fetchApi(`${config.url}/quotation/getBusinessByID`, {
 				headers: { Authorization: `Bearer ${localStorage.getItem("@accessToken")}` },
 			});
 			if (!res.ok) throw new Error("Failed to fetch business info");
@@ -128,7 +129,7 @@ const Quotation = () => {
 	// Mutations
 	const deleteMutation = useMutation({
 		mutationFn: async (id) => {
-			const res = await fetch(`${config.url}/Quotation/deleteQuotation/${id}`, {
+			const res = await fetchApi(`${config.url}/Quotation/deleteQuotation/${id}`, {
 				method: "DELETE",
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("@accessToken")}`,

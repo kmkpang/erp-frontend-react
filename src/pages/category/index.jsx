@@ -4,6 +4,7 @@ import TableList from "@component/table-list";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
 import DeleteModal from "@module/product/delete-modal";
+import { fetchApi } from "@utils/api";
 
 const Category = () => {
 	const queryClient = useQueryClient();
@@ -23,7 +24,7 @@ const Category = () => {
 		queryKey: ["categories"],
 		queryFn: async () => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/product/getCategory`, {
+			const response = await fetchApi(`${config.url}/product/getCategory`, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
@@ -39,7 +40,7 @@ const Category = () => {
 	const addMutation = useMutation({
 		mutationFn: async (newData) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/product/Addcategory`, {
+			const response = await fetchApi(`${config.url}/product/Addcategory`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -66,7 +67,7 @@ const Category = () => {
 	const updateMutation = useMutation({
 		mutationFn: async (updatedData) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/product/EditCategory/${updatedData.categoryID}`, {
+			const response = await fetchApi(`${config.url}/product/EditCategory/${updatedData.categoryID}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
@@ -93,7 +94,7 @@ const Category = () => {
 	const deleteMutation = useMutation({
 		mutationFn: async (categoryID) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/product/DeleteCategory/${categoryID}`, {
+			const response = await fetchApi(`${config.url}/product/DeleteCategory/${categoryID}`, {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",

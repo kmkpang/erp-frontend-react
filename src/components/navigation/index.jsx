@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { config } from "@constant";
 import ProfileModal from "./profile-modal";
 import ChangePasswordModal from "./change-password-modal";
+import { fetchApi } from "@utils/api";
 import "./index.css";
 
 const API_CALL = config.url;
@@ -92,7 +93,7 @@ const Navigation = () => {
 		queryKey: ["business"],
 		queryFn: async () => {
 			const token = localStorage.getItem("@accessToken");
-			const res = await fetch(`${API_CALL}/Quotation/getBusinessByID`, {
+			const res = await fetchApi(`${API_CALL}/Quotation/getBusinessByID`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await res.json();

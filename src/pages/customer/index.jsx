@@ -4,6 +4,7 @@ import TableList from "@component/table-list";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
 import DeleteModal from "@module/product/delete-modal";
+import { fetchApi } from "@utils/api";
 
 const Customer = () => {
 	const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -33,7 +34,7 @@ const Customer = () => {
 		queryKey: ["customers"],
 		queryFn: async () => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/Quotation/getCustomer`, {
+			const response = await fetchApi(`${config.url}/Quotation/getCustomer`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await response.json();
@@ -47,7 +48,7 @@ const Customer = () => {
 	const addMutation = useMutation({
 		mutationFn: async (newData) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/Quotation/addCustomer`, {
+			const response = await fetchApi(`${config.url}/Quotation/addCustomer`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -95,7 +96,7 @@ const Customer = () => {
 		mutationFn: async (updatedData) => {
 			const token = localStorage.getItem("@accessToken");
 			const cusID = updatedData.cus_id;
-			const response = await fetch(`${config.url}/Quotation/editCustomer/${cusID}`, {
+			const response = await fetchApi(`${config.url}/Quotation/editCustomer/${cusID}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
@@ -171,7 +172,7 @@ const Customer = () => {
 	const deleteMutation = useMutation({
 		mutationFn: async (cusId) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/Quotation/deleteCustomer/${cusId}`, {
+			const response = await fetchApi(`${config.url}/Quotation/deleteCustomer/${cusId}`, {
 				method: "DELETE",
 				headers: {
 					Authorization: `Bearer ${token}`,

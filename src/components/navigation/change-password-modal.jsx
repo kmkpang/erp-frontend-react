@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
 import PropTypes from "prop-types";
+import { fetchApi } from "@utils/api";
 
 const ChangePasswordModal = ({ isOpen, onClose, userId }) => {
 	const { success, error: showError } = useAlert();
@@ -39,7 +40,7 @@ const ChangePasswordModal = ({ isOpen, onClose, userId }) => {
 	const passwordMutation = useMutation({
 		mutationFn: async (data) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/auth/ChangePassword/${userId}`, {
+			const response = await fetchApi(`${config.url}/auth/ChangePassword/${userId}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",

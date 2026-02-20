@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
 import PropTypes from "prop-types";
+import { fetchApi } from "@utils/api";
 
 const ProfileModal = ({ isOpen, onClose, userId }) => {
 	const { success, error: showError } = useAlert();
@@ -24,7 +25,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 		queryFn: async () => {
 			if (!userId) return null;
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/auth/GetUserByID/${userId}`, {
+			const response = await fetchApi(`${config.url}/auth/GetUserByID/${userId}`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await response.json();
@@ -59,7 +60,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 	const updateMutation = useMutation({
 		mutationFn: async (updatedData) => {
 			const token = localStorage.getItem("@accessToken");
-			const response = await fetch(`${config.url}/auth/EditUsers/${userId}`, {
+			const response = await fetchApi(`${config.url}/auth/EditUsers/${userId}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
