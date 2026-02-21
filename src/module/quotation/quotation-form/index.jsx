@@ -7,7 +7,7 @@ import { useAlert } from "@component/alert/alert-context";
 import { fetchApi } from "@utils/api";
 
 const getInitialFormState = () => ({
-	sale_number: "QT",
+	sale_number: "HD",
 	sale_date: new Date().toISOString().slice(0, 10),
 	cus_id: "",
 	cus_name: "",
