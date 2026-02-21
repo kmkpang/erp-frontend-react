@@ -13,6 +13,7 @@ import Product from "@pages/product";
 import RoleManage from "@pages/role-manage";
 import Quotation from "@pages/quotation";
 import Invoice from "@pages/invoice";
+import Dashboard from "@pages/dashboard";
 import Layout from "@component/layout";
 import "./app.css";
 import "react-toastify/dist/ReactToastify.css";
@@ -41,6 +42,7 @@ function App() {
 						<Route element={<Layout />}>
 							<Route path="/" element={<Navigate to="/home" replace />} />
 							<Route path="/home" element={<Home />} />
+							<Route path="/dashboard" element={<Dashboard />} />
 							<Route path="/aboutcompany" element={<About />} />
 							<Route path="/billingnote" element={<BillingNote />} />
 							<Route path="/category" element={<Category />} />

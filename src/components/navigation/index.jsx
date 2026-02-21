@@ -36,6 +36,11 @@ const Navigation = () => {
 	};
 
 	const MENU_ITEMS = [
+		// {
+		// 	title: "ภาพรวมระบบ",
+		// 	path: "/dashboard",
+		// 	roles: ["SUPERUSER", "ADMIN", "USER"],
+		// },
 		{
 			title: "หน้าหลัก",
 			path: "/home",

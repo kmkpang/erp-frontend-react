@@ -1,0 +1,109 @@
+.stat-card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+  height: 100%;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-right: 1rem;
+}
+
+.card-sales .stat-icon { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.card-pending .stat-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.card-overdue .stat-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.card-profit .stat-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0.25rem 0;
+  color: #111827;
+}
+
+.stat-diff {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.stat-diff.positive { color: #10b981; }
+.stat-diff.negative { color: #ef4444; }
+
+.stat-sub {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 16px;
+  border: none;
+  height: 100%;
+}
+
+.card-title {
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.avatar-small {
+  width: 32px;
+  height: 32px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.table thead th {
+  background-color: #f9fafb;
+  border-bottom: 2px solid #f3f4f6;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.table tbody td {
+  padding: 1rem 0.75rem;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.badge {
+  padding: 0.5em 0.8em;
+  border-radius: 6px;
+  font-weight: 500;
+}
