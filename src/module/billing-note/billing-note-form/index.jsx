@@ -192,6 +192,7 @@ const BillingNoteFormModal = ({
 		mutationFn: async (newData) => {
 			const products = newData.productForms.map((form) => ({
 				productID: form.productID,
+				productname: form.productname || "",
 				sale_price: form.sale_price,
 				sale_qty: form.sale_qty,
 				product_detail: form.description || "",
@@ -257,6 +258,7 @@ const BillingNoteFormModal = ({
 		mutationFn: async (updatedData) => {
 			const products = updatedData.productForms.map((form) => ({
 				productID: form.productID,
+				productname: form.productname || "",
 				sale_price: form.sale_price,
 				sale_qty: form.sale_qty,
 				product_detail: form.description || form.product_detail || "",
