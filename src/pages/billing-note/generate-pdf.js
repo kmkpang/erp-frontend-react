@@ -181,9 +181,18 @@ export const generatePDF = async (
 	}
 
 	const renderFooter = (lastY) => {
-		const finalY = lastY + 2;
+		let finalY = lastY + 2;
 		const summaryX = 142;
 		const summaryW = 58;
+
+		const pageHeight = doc.internal.pageSize.getHeight();
+		// Billing note footer is quite tall due to payment details & signatures (~105 units)
+		if (finalY + 105 > pageHeight) {
+			doc.addPage();
+			renderHeader();
+			renderSectionBoxes();
+			finalY = 100;
+		}
 
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
 		doc.setLineWidth(0.2);
@@ -400,12 +409,26 @@ export const generatePDF = async (
 			3: { cellWidth: 28, halign: "right" },
 			4: { cellWidth: 30, halign: "right" },
 		},
-		margin: { left: 10, right: 10 },
+		margin: { top: 100, left: 10, right: 10, bottom: 20 },
+		didDrawPage: function () {
+			renderHeader();
+			renderSectionBoxes();
+		},
 		tableLineColor: blueColor,
 		tableLineWidth: 0.1,
 	});
 
 	renderFooter(doc.lastAutoTable.finalY);
+
+	const totalPages = doc.internal.getNumberOfPages();
+	if (totalPages > 1) {
+		for (let i = 1; i <= totalPages; i++) {
+			doc.setPage(i);
+			doc.setFont("THSarabunNew", "normal");
+			doc.setFontSize(12);
+			doc.text(`หน้า ${i} / ${totalPages}`, 195, 15, { align: "right" });
+		}
+	}
 
 	if (action === "download") {
 		doc.save(`${row.billing || "billing"}.pdf`);

@@ -1,6 +1,52 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+// Thai Baht Text Helper
+const toThaiBaht = (number) => {
+	if (!number || Number.isNaN(number)) return "ศูนย์บาทถ้วน";
+	const numbers = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
+	const scales = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+	let [integer, decimals] = Number.parseFloat(number).toFixed(2).split(".");
+	let result = "";
+
+	// Handle millions if number is very large
+	const handlePart = (numStr) => {
+		let partResult = "";
+		for (let i = 0; i < numStr.length; i++) {
+			let n = Number.parseInt(numStr[i]);
+			let scaleIndex = numStr.length - i - 1;
+			if (n !== 0) {
+				if (scaleIndex === 0 && n === 1 && numStr.length > 1) partResult += "เอ็ด";
+				else if (scaleIndex === 1 && n === 2) partResult += "ยี่";
+				else if (scaleIndex === 1 && n === 1) partResult += "";
+				else partResult += numbers[n];
+				partResult += scales[scaleIndex];
+			}
+		}
+		return partResult;
+	};
+
+	if (Number.parseInt(integer) === 0) result = numbers[0];
+	else {
+		let parts = [];
+		while (integer.length > 0) {
+			parts.push(integer.substring(Math.max(0, integer.length - 6)));
+			integer = integer.substring(0, Math.max(0, integer.length - 6));
+		}
+		for (let i = parts.length - 1; i >= 0; i--) {
+			result += handlePart(parts[i]);
+			if (i > 0) result += "ล้าน";
+		}
+	}
+	result += "บาท";
+
+	if (Number.parseInt(decimals) === 0) result += "ถ้วน";
+	else {
+		result += handlePart(decimals) + "สตางค์";
+	}
+	return result;
+};
+
 // Helper for phone formatting
 const formatPhoneNumber = (phoneNumber) => {
 	if (!phoneNumber) return "-";
@@ -125,7 +171,7 @@ export const generatePDF = async (
 	};
 
 	// Calculations for footer
-	const price = parseFloat(row.total_grand || row.total_price || 0);
+	const price = parseFloat(row.total_grand || row.total_price || row.sale_totalprice || 0);
 	// Basic calculation logic same as BillingNote, assuming fields are consistent
 	// Quotation usually excludes VAT until final total? Or depends on vatType.
 	let finalTotal = price;
@@ -145,9 +191,18 @@ export const generatePDF = async (
 	}
 
 	const renderFooter = (lastY) => {
-		const finalY = lastY + 2;
+		let finalY = lastY + 2;
 		const summaryX = 142;
 		const summaryW = 58;
+
+		// Check if we have enough space for the summary/signatures (~90 units)
+		const pageHeight = doc.internal.pageSize.getHeight();
+		if (finalY + 95 > pageHeight) {
+			doc.addPage();
+			renderHeader();
+			renderSectionBoxes();
+			finalY = 100; // Start below the header
+		}
 
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
 		doc.setLineWidth(0.2);
@@ -191,6 +246,17 @@ export const generatePDF = async (
 			finalY + 28,
 			{ align: "right" }
 		);
+
+		// Text Amount Box
+		doc.setFont("THSarabunNew", "normal");
+		doc.setFontSize(13);
+
+		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
+		doc.rect(40, finalY + 27, 95, 10);
+		doc.text("ตัวอักษร", 10, finalY + 33);
+		doc.setTextColor(blueColor[0], blueColor[1], blueColor[2]);
+		doc.text(`( ${toThaiBaht(netAmount)} )`, 87.5, finalY + 33, { align: "center" });
+		doc.setTextColor(0, 0, 0);
 
 		// Signatures
 		const sigY = finalY + 45; // Moved up slightly as Payment section might be different or removed
@@ -241,10 +307,8 @@ export const generatePDF = async (
 		}
 	};
 
-	// Render Document
-	renderHeader();
-	renderSectionBoxes();
-
+	// We will draw headers dynamically on each page loop (didDrawPage)
+	// so they repeat correctly if the table is long
 	// Table
 	const tableData = products.map((item, index) => {
 		// Find product in master list if name is missing
@@ -295,12 +359,26 @@ export const generatePDF = async (
 			3: { cellWidth: 28, halign: "right" },
 			4: { cellWidth: 30, halign: "right" },
 		},
-		margin: { left: 10, right: 10 },
+		margin: { top: 100, left: 10, right: 10, bottom: 20 },
+		didDrawPage: function () {
+			renderHeader();
+			renderSectionBoxes();
+		},
 		tableLineColor: blueColor,
 		tableLineWidth: 0.1,
 	});
 
 	renderFooter(doc.lastAutoTable.finalY);
+
+	const totalPages = doc.internal.getNumberOfPages();
+	if (totalPages > 1) {
+		for (let i = 1; i <= totalPages; i++) {
+			doc.setPage(i);
+			doc.setFont("THSarabunNew", "normal");
+			doc.setFontSize(12);
+			doc.text(`หน้า ${i} / ${totalPages}`, 195, 15, { align: "right" });
+		}
+	}
 
 	if (action === "download") {
 		doc.save(`${docNumber}.pdf`);
