@@ -17,12 +17,13 @@ const SearchableSelect = ({
 		let term = "";
 		if (value) {
 			if (labelKey) {
+				const getLabel = (o) => (typeof labelKey === "function" ? labelKey(o) : o[labelKey]);
 				const foundOption = valueKey
 					? options.find((o) => o[valueKey] === value)
-					: options.find((o) => o[labelKey] === value);
+					: options.find((o) => getLabel(o) === value);
 
 				if (foundOption) {
-					term = foundOption[labelKey];
+					term = getLabel(foundOption);
 				} else {
 					term = value;
 				}
@@ -65,7 +66,11 @@ const SearchableSelect = ({
 	}, [wrapperRef]);
 
 	const filteredOptions = options.filter((option) => {
-		const label = labelKey ? option[labelKey] : option;
+		const label = labelKey
+			? typeof labelKey === "function"
+				? labelKey(option)
+				: option[labelKey]
+			: option;
 		// Safely handle if label is undefined/null
 		return String(label || "")
 			.toLowerCase()
@@ -80,8 +85,12 @@ const SearchableSelect = ({
 	};
 
 	const handleSelectOption = (option) => {
-		const val = valueKey ? option[valueKey] : labelKey ? option[labelKey] : option;
-		const label = labelKey ? option[labelKey] : option;
+		const label = labelKey
+			? typeof labelKey === "function"
+				? labelKey(option)
+				: option[labelKey]
+			: option;
+		const val = valueKey ? option[valueKey] : label;
 
 		setSearchTerm(label);
 		if (onChange) onChange(val);
@@ -126,8 +135,12 @@ const SearchableSelect = ({
 				>
 					<ul className="list-unstyled mb-0">
 						{filteredOptions.map((option, index) => {
-							const label = labelKey ? option[labelKey] : option;
-							const val = valueKey ? option[valueKey] : labelKey ? option[labelKey] : option;
+							const label = labelKey
+								? typeof labelKey === "function"
+									? labelKey(option)
+									: option[labelKey]
+								: option;
+							const val = valueKey ? option[valueKey] : label;
 							const isSelected = val === value;
 
 							return (

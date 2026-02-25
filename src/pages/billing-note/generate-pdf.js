@@ -108,11 +108,11 @@ export const generatePDF = async (
 		// Company Info
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(22);
-		doc.text(businessData?.bus_name || "-", 40, 18);
+		doc.text(businessData?.bus_name || "-", 55, 18);
 
 		if (businessData?.bus_code === "00000") {
 			doc.setFontSize(14);
-			doc.text("(สำนักงานใหญ่)", 40, 24);
+			doc.text("(สำนักงานใหญ่)", 55, 24);
 		}
 
 		doc.setFont("THSarabunNew", "normal");
@@ -120,7 +120,11 @@ export const generatePDF = async (
 		const addressLines = doc.splitTextToSize(businessData?.bus_address || "", 100);
 		doc.text(addressLines, 10, 38);
 		doc.text(`เลขประจำตัวผู้เสียภาษี  ${businessData?.bus_tax || "-"}`, 10, 51);
-		doc.text(`โทร  ${formatPhoneNumber(businessData?.bus_tel) || "-"}`, 10, 56);
+
+		console.log("businessData", businessData);
+		const tel = formatPhoneNumber(businessData?.bus_tel) || "-";
+		const email = businessData?.bus_email ? `      E-mail : ${businessData.bus_email}` : "";
+		doc.text(`โทร  ${tel}${email}`, 10, 56);
 
 		// Title Box
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
@@ -129,6 +133,12 @@ export const generatePDF = async (
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(18);
 		doc.text("ใบกำกับภาษี/ใบเสร็จรับเงิน", 170, 22, { align: "center" });
+
+		// Original mark
+		doc.setTextColor(255, 0, 0);
+		doc.setFontSize(18);
+		doc.text("ต้นฉบับ", 170, 50, { align: "center" });
+		doc.setTextColor(0, 0, 0);
 	};
 
 	// Customer & Document Info

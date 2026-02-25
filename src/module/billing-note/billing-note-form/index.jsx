@@ -204,7 +204,7 @@ const BillingNoteFormModal = ({
 			const requestBody = {
 				billing_number: newData.billing_number,
 				billing_date: newData.billing_date,
-				cus_id: newData.cus_id,
+				cus_id: newData.cus_id || null,
 				bus_id: newData.bus_id || localStorage.getItem("@bus_id"),
 				employeeID: employeeID,
 				payments: newData.payment_method,
@@ -217,8 +217,8 @@ const BillingNoteFormModal = ({
 				sale_totalprice: newData.total_price,
 				vatType: newData.vatType,
 				products: products,
-				invoice_id: newData.invoice_id,
-				sale_id: newData.sale_id,
+				invoice_id: newData.invoice_id || null,
+				sale_id: newData.sale_id || null,
 			};
 
 			const res = await fetchApi(`${config.url}/Billing/createBilling`, {
@@ -315,7 +315,7 @@ const BillingNoteFormModal = ({
 			});
 			const json = await res.json();
 			if (!res.ok) throw new Error(json.message || "Failed to upload image");
-			
+
 			setFormData((prev) => ({ ...prev, pay_image_url: json.data.pay_image_url }));
 			success("อัพโหลดรูปภาพสำเร็จ");
 		} catch (err) {
@@ -503,7 +503,7 @@ const BillingNoteFormModal = ({
 										<SearchableSelect
 											options={pendingQuotations}
 											value=""
-											labelKey="sale_number"
+											labelKey={(option) => `${option.quotation_num} (${option.cus_name})`}
 											valueKey="sale_id"
 											onChange={(val) => {
 												const item = pendingQuotations.find((q) => q.sale_id === val);
@@ -517,7 +517,7 @@ const BillingNoteFormModal = ({
 										<SearchableSelect
 											options={pendingInvoices}
 											value=""
-											labelKey="invoice_number"
+											labelKey={(option) => `${option.invoice_number} (${option.cus_name})`}
 											valueKey="invoice_id"
 											onChange={(val) => {
 												const item = pendingInvoices.find((i) => i.invoice_id === val);
@@ -893,13 +893,21 @@ const BillingNoteFormModal = ({
 														accept="image/png, image/jpeg"
 														onChange={handleImageUpload}
 													/>
-													{isUploadingImage && <span className="text-primary mt-2 d-inline-block">กำลังอัปโหลด...</span>}
+													{isUploadingImage && (
+														<span className="text-primary mt-2 d-inline-block">
+															กำลังอัปโหลด...
+														</span>
+													)}
 													{formData.pay_image_url && !isUploadingImage && (
 														<div className="mt-3">
 															<img
 																src={formData.pay_image_url}
 																alt="Slip"
-																style={{ maxWidth: "200px", borderRadius: "8px", border: "1px solid #ddd" }}
+																style={{
+																	maxWidth: "200px",
+																	borderRadius: "8px",
+																	border: "1px solid #ddd",
+																}}
 															/>
 														</div>
 													)}
@@ -978,13 +986,21 @@ const BillingNoteFormModal = ({
 														accept="image/png, image/jpeg"
 														onChange={handleImageUpload}
 													/>
-													{isUploadingImage && <span className="text-primary mt-2 d-inline-block">กำลังอัปโหลด...</span>}
+													{isUploadingImage && (
+														<span className="text-primary mt-2 d-inline-block">
+															กำลังอัปโหลด...
+														</span>
+													)}
 													{formData.pay_image_url && !isUploadingImage && (
 														<div className="mt-3">
 															<img
 																src={formData.pay_image_url}
 																alt="Cheque"
-																style={{ maxWidth: "200px", borderRadius: "8px", border: "1px solid #ddd" }}
+																style={{
+																	maxWidth: "200px",
+																	borderRadius: "8px",
+																	border: "1px solid #ddd",
+																}}
 															/>
 														</div>
 													)}
