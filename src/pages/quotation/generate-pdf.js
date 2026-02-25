@@ -143,12 +143,6 @@ export const generatePDF = async (
 		doc.setFontSize(16);
 		doc.text("ใบเสนอราคา", 170, 20, { align: "center" });
 		doc.setFontSize(10);
-
-		// Original mark
-		doc.setTextColor(255, 0, 0);
-		doc.setFontSize(16);
-		doc.text("ต้นฉบับ", 170, 38, { align: "center" });
-		doc.setTextColor(0, 0, 0);
 	};
 
 	// Customer & Document Info
@@ -285,8 +279,8 @@ export const generatePDF = async (
 
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(11);
-		doc.text("ลูกค้า/ผู้รับสินค้า/ใบแจ้งหนี้", 41, sigY + 5, { align: "center" });
-		doc.text("ผู้ผลิต", 103, sigY + 5, { align: "center" });
+		doc.text("ลูกค้า/ผู้รับสินค้า", 41, sigY + 5, { align: "center" });
+		doc.text("ผู้เสนอ", 103, sigY + 5, { align: "center" });
 
 		// Remove "บริษัท" and "จำกัด" (including potential decomposed vowel forms)
 		let rawBusName = businessData.business.bus_name || "";

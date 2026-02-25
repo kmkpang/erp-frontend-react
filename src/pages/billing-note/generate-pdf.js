@@ -334,7 +334,7 @@ export const generatePDF = async (
 		doc.line(135, sigY, 135, sigY + 30);
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.text("ลูกค้า/ผู้รับสินค้า/ใบแจ้งหนี้", 41, sigY + 5, { align: "center" });
+		doc.text("ลูกค้า/ผู้ชำระเงิน", 41, sigY + 5, { align: "center" });
 		doc.text("ผู้ผลิต", 103, sigY + 5, { align: "center" });
 
 		// Remove "บริษัท" and "จำกัด" (including potential decomposed vowel forms)
