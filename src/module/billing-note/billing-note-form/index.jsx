@@ -41,6 +41,7 @@ const BillingNoteFormModal = ({
 	idEditing,
 	customerOptions,
 	productOptions,
+	requireCustomer,
 }) => {
 	const queryClient = useQueryClient();
 	const { success, error } = useAlert();
@@ -137,6 +138,8 @@ const BillingNoteFormModal = ({
 		}
 		return getInitialFormState();
 	});
+
+	// Remove hasCustomer state
 
 	const handleSourceSelect = (type, item) => {
 		if (!item) return;
@@ -454,7 +457,7 @@ const BillingNoteFormModal = ({
 					</div>
 					<form onSubmit={handleFormSubmit}>
 						<div className="modal-body">
-							{!isEditMode && (
+							{!isEditMode && requireCustomer && (
 								<div className="mb-3 border p-3 rounded bg-light">
 									<label className="form-label fw-bold">เลือกแหล่งที่มาของข้อมูล:</label>
 									<div className="d-flex gap-3 mb-2">
@@ -556,58 +559,60 @@ const BillingNoteFormModal = ({
 							</div>
 
 							{/* Customer Info */}
-							<div className="row mb-3">
-								<div className="col-md-12">
-									<h5>ข้อมูลลูกค้า</h5>
+							{requireCustomer && (
+								<div className="row mb-3">
+									<div className="col-md-12 d-flex justify-content-between align-items-center">
+										<h5 className="mb-0">ข้อมูลลูกค้า</h5>
+									</div>
+
+									<div className="col-md-12 mt-3">
+										<label className="form-label">ชื่อบริษัท/ชื่อลูกค้า:</label>
+										<SearchableSelect
+											options={customerOptions || []}
+											value={formData.cus_name}
+											labelKey="cus_name"
+											valueKey="cus_name"
+											onChange={(val) => {
+												handleCustomerChange({ target: { value: val } });
+											}}
+											placeholder="กรุณากรอกชื่อบริษัท/ชื่อลูกค้า"
+										/>
+									</div>
+									<div className="col-md-12 mt-2">
+										<label className="form-label">ที่อยู่บริษัท/ลูกค้า:</label>
+										<input
+											type="text"
+											className="form-control"
+											name="cus_address"
+											value={formData.cus_address}
+											onChange={handleInputChange}
+											placeholder="กรุณากรองที่อยู่"
+										/>
+									</div>
+									<div className="col-md-12 mt-2">
+										<label className="form-label">เบอร์โทรศัพท์:</label>
+										<input
+											type="text"
+											className="form-control"
+											name="cus_tel"
+											value={formData.cus_tel}
+											onChange={handleInputChange}
+											placeholder="กรุณากรอกเบอร์โทรศัพท์"
+										/>
+									</div>
+									<div className="col-md-12 mt-2">
+										<label className="form-label">เลขประจำตัวผู้เสียภาษี:</label>
+										<input
+											type="text"
+											className="form-control"
+											name="cus_tax"
+											value={formData.cus_tax}
+											onChange={handleInputChange}
+											placeholder="กรุณากรอกเลขประจำตัวผู้เสียภาษี"
+										/>
+									</div>
 								</div>
-								<div className="col-md-12">
-									<label className="form-label">ชื่อบริษัท/ชื่อลูกค้า:</label>
-									<SearchableSelect
-										options={customerOptions || []}
-										value={formData.cus_name}
-										labelKey="cus_name"
-										valueKey="cus_name"
-										onChange={(val) => {
-											// Mimic event object for handleCustomerChange
-											handleCustomerChange({ target: { value: val } });
-										}}
-										placeholder="กรุณากรอกชื่อบริษัท/ชื่อลูกค้า"
-									/>
-								</div>
-								<div className="col-md-12 mt-2">
-									<label className="form-label">ที่อยู่บริษัท/ลูกค้า:</label>
-									<input
-										type="text"
-										className="form-control"
-										name="cus_address"
-										value={formData.cus_address}
-										onChange={handleInputChange}
-										placeholder="กรุณากรองที่อยู่"
-									/>
-								</div>
-								<div className="col-md-12 mt-2">
-									<label className="form-label">เบอร์โทรศัพท์:</label>
-									<input
-										type="text"
-										className="form-control"
-										name="cus_tel"
-										value={formData.cus_tel}
-										onChange={handleInputChange}
-										placeholder="กรุณากรอกเบอร์โทรศัพท์"
-									/>
-								</div>
-								<div className="col-md-12 mt-2">
-									<label className="form-label">เลขประจำตัวผู้เสียภาษี:</label>
-									<input
-										type="text"
-										className="form-control"
-										name="cus_tax"
-										value={formData.cus_tax}
-										onChange={handleInputChange}
-										placeholder="กรุณากรอกเลขประจำตัวผู้เสียภาษี"
-									/>
-								</div>
-							</div>
+							)}
 
 							<hr />
 

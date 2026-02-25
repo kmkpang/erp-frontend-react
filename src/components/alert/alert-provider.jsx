@@ -41,7 +41,10 @@ export const AlertProvider = ({ children }) => {
 			<ToastContainer />
 			{/* Error Modal */}
 			{errorModalOpen && (
-				<div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1050 }}>
+				<div
+					className="modal show d-block"
+					style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }}
+				>
 					<div className="modal-dialog modal-dialog-centered">
 						<div className="modal-content">
 							<div className="modal-header bg-danger text-white">

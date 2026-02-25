@@ -128,7 +128,7 @@ const SearchableSelect = ({
 				<div
 					className="position-absolute w-100 bg-white border rounded shadow-sm mt-1"
 					style={{
-						zIndex: 1050,
+						zIndex: 9999,
 						maxHeight: "200px",
 						overflowY: "auto",
 					}}

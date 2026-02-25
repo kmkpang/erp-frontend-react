@@ -43,7 +43,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 	if (user !== prevUser || isOpen !== prevIsOpen) {
 		setPrevUser(user);
 		setPrevIsOpen(isOpen);
-		
+
 		if (user && isOpen) {
 			setFormData({
 				userF_name: user.userF_name || "",
@@ -127,7 +127,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 	return (
 		<div
 			className="modal fade show d-block"
-			style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1050 }}
+			style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }}
 			tabIndex="-1"
 		>
 			<div className="modal-dialog modal-dialog-centered">
@@ -255,10 +255,7 @@ const ProfileModal = ({ isOpen, onClose, userId }) => {
 									</button>
 								</>
 							) : (
-								<button
-									className="btn btn-primary"
-									onClick={() => setIsEditingAll(true)}
-								>
+								<button className="btn btn-primary" onClick={() => setIsEditingAll(true)}>
 									แก้ไขข้อมูล
 								</button>
 							)}

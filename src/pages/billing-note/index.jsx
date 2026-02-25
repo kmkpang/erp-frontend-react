@@ -20,6 +20,8 @@ const BillingNote = () => {
 	const [isEditMode, setIsEditMode] = useState(false);
 	const [idEditing, setIdEditing] = useState(null);
 	const [editingItem, setEditingItem] = useState(null);
+	const [showModeSelectionModal, setShowModeSelectionModal] = useState(false);
+	const [requireCustomer, setRequireCustomer] = useState(true);
 
 	// PDF State
 	const [pdfUrl, setPdfUrl] = useState(null);
@@ -35,6 +37,7 @@ const BillingNote = () => {
 		documentNumber: "",
 		customerName: "",
 	});
+	const [customerFilter, setCustomerFilter] = useState("with_customer");
 
 	// Data Fetching
 	const { data: getBillingData } = useQuery({
@@ -110,8 +113,14 @@ const BillingNote = () => {
 			);
 		}
 
+		if (customerFilter === "with_customer") {
+			data = data.filter((item) => !!item.cus_id || !!item.cus_name);
+		} else if (customerFilter === "without_customer") {
+			data = data.filter((item) => !item.cus_id && !item.cus_name);
+		}
+
 		return data;
-	}, [getBillingData, searchCriteria]);
+	}, [getBillingData, searchCriteria, customerFilter]);
 
 	// Actions
 	const handleClosePopup = () => {
@@ -145,13 +154,28 @@ const BillingNote = () => {
 	const handleAdd = () => {
 		setEditingItem(null);
 		setIsEditMode(false);
-		setIsPopupOpen(true);
+		setShowModeSelectionModal(true);
 	};
 
 	const handleEdit = (item) => {
 		setEditingItem(item);
 		setIdEditing(item.billing_id);
 		setIsEditMode(true);
+		const hasCus = !!(
+			item.cus_name ||
+			item.cus_id ||
+			item.cus_address ||
+			item.cus_tel ||
+			item.cus_tax
+		);
+		setRequireCustomer(hasCus);
+		setIsPopupOpen(true);
+	};
+
+	const openFormWithMode = (mode) => {
+		setShowModeSelectionModal(false);
+		setRequireCustomer(mode === "with_customer");
+		setCustomerFilter(mode);
 		setIsPopupOpen(true);
 	};
 
@@ -190,6 +214,42 @@ const BillingNote = () => {
 						<SearchForm onSearch={setSearchCriteria} />
 					</div>
 
+					{/* Customer Tabs */}
+					<div className="d-flex mb-4" style={{ borderBottom: "1px solid #dee2e6" }}>
+						<button
+							className={`btn rounded-0 px-4 py-2 border-0 bg-transparent ${
+								customerFilter === "with_customer" ? "text-primary fw-bold" : "text-muted"
+							}`}
+							style={{
+								borderBottom:
+									customerFilter === "with_customer"
+										? "3px solid var(--bs-primary, #6f42c1) !important"
+										: "3px solid transparent",
+								marginBottom: "-1px",
+								boxShadow: "none",
+							}}
+							onClick={() => setCustomerFilter("with_customer")}
+						>
+							มีข้อมูลลูกค้า
+						</button>
+						<button
+							className={`btn rounded-0 px-4 py-2 border-0 bg-transparent ${
+								customerFilter === "without_customer" ? "text-primary fw-bold" : "text-muted"
+							}`}
+							style={{
+								borderBottom:
+									customerFilter === "without_customer"
+										? "3px solid var(--bs-primary, #6f42c1) !important"
+										: "3px solid transparent",
+								marginBottom: "-1px",
+								boxShadow: "none",
+							}}
+							onClick={() => setCustomerFilter("without_customer")}
+						>
+							ไม่มีข้อมูลลูกค้า
+						</button>
+					</div>
+
 					<TableList
 						initialTableData={billingData}
 						tableHeaders={[
@@ -202,7 +262,11 @@ const BillingNote = () => {
 								},
 							},
 							{ label: "เลขที่เอกสาร", key: "billing", align: "center" },
-							{ label: "ลูกค้า", key: "cus_name" },
+							{
+								label: "ลูกค้า",
+								key: "cus_name",
+								render: (val) => val || "-",
+							},
 							{
 								label: "ประเภทภาษี",
 								key: "vatType",
@@ -246,6 +310,40 @@ const BillingNote = () => {
 				</div>
 			</div>
 
+			{/* Mode Selection Modal */}
+			{showModeSelectionModal && (
+				<div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+					<div className="modal-dialog modal-md modal-dialog-centered">
+						<div className="modal-content">
+							<div className="modal-header">
+								<h5 className="modal-title">เลือกรูปแบบการสร้างใบเสร็จรับเงิน</h5>
+								<button
+									type="button"
+									className="btn-close"
+									onClick={() => setShowModeSelectionModal(false)}
+								></button>
+							</div>
+							<div className="modal-body d-flex flex-column gap-3 p-4">
+								<button
+									className="btn btn-outline-primary py-3 text-start"
+									onClick={() => openFormWithMode("with_customer")}
+								>
+									<div className="fw-bold fs-5">แบบมีข้อมูลลูกค้า</div>
+									<small>สร้างใบเสร็จรับเงินโดยการระบุข้อมูลลูกค้า</small>
+								</button>
+								<button
+									className="btn btn-outline-primary py-3 text-start"
+									onClick={() => openFormWithMode("without_customer")}
+								>
+									<div className="fw-bold fs-5">แบบไม่มีข้อมูลลูกค้า</div>
+									<small>สร้างใบเสร็จรับเงินโดยไม่ระบุข้อมูลลูกค้า</small>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
+
 			{/* Add/Edit Modal */}
 			{isPopupOpen && (
 				<BillingNoteFormModal
@@ -256,6 +354,7 @@ const BillingNote = () => {
 					initialData={editingItem}
 					customerOptions={customerQuery}
 					productOptions={productQuery}
+					requireCustomer={requireCustomer}
 				/>
 			)}
 

@@ -143,27 +143,35 @@ export const generatePDF = async (
 
 	// Customer & Document Info
 	const renderSectionBoxes = () => {
-		// Customer Box
-		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
-		doc.rect(10, 60, 130, 35);
+		const hasCustomerInfo = row.cus_name || row.cus_address || row.cus_tel || row.cus_tax;
 
-		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(14);
-		doc.text("ชื่อลูกค้า / Customers:", 12, 65);
-		doc.text("ที่อยู่ / Address:", 12, 75);
-		doc.text("เบอร์โทรศัพท์", 12, 85);
-		doc.text("เลขประจำตัวผู้เสียภาษี", 12, 90);
+		if (hasCustomerInfo) {
+			// Customer Box
+			doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
+			doc.setLineWidth(0.2);
+			doc.rect(10, 60, 130, 35);
 
-		doc.setFont("THSarabunNew", "normal");
-		doc.text(row.cus_name || "-", 45, 65);
-		const cusAddressLines = doc.splitTextToSize(row.cus_address || "-", 90);
-		doc.text(cusAddressLines, 45, 75);
-		doc.text(formatPhoneNumber(row.cus_tel) || "-", 45, 85);
-		doc.text(row.cus_tax || "-", 45, 90);
+			doc.setFont("THSarabunNew", "normal");
+			doc.setFontSize(14);
+			doc.text("ชื่อลูกค้า / Customers:", 12, 65);
+			doc.text("ที่อยู่ / Address:", 12, 75);
+			doc.text("เบอร์โทรศัพท์", 12, 85);
+			doc.text("เลขประจำตัวผู้เสียภาษี", 12, 90);
+
+			doc.setFont("THSarabunNew", "normal");
+			doc.text(row.cus_name || "-", 45, 65);
+			const cusAddressLines = doc.splitTextToSize(row.cus_address || "-", 90);
+			doc.text(cusAddressLines, 45, 75);
+			doc.text(formatPhoneNumber(row.cus_tel) || "-", 45, 85);
+			doc.text(row.cus_tax || "-", 45, 90);
+		}
 
 		// Billing Info Box
+		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
+		doc.setLineWidth(0.2);
 		doc.rect(142, 60, 58, 35);
 		doc.setFont("THSarabunNew", "normal");
+		doc.setFontSize(14); // Ensure correct font size even if customer block was skipped
 		doc.text("เลขที่ / No.", 145, 78);
 		doc.text("วันที่ / Date", 145, 88);
 

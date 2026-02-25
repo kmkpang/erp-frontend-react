@@ -94,7 +94,7 @@ const ChangePasswordModal = ({ isOpen, onClose, userId }) => {
 	return (
 		<div
 			className="modal fade show d-block"
-			style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1050 }}
+			style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999 }}
 			tabIndex="-1"
 		>
 			<div className="modal-dialog modal-dialog-centered">
