@@ -43,7 +43,10 @@ const QuotationFormModal = ({
 	const { success, error } = useAlert();
 	const [formData, setFormData] = useState(() => {
 		if (initialData && isEditMode) {
-			const total = initialData.details.reduce((sum, p) => sum + (parseFloat(p.sale_price) || 0), 0);
+			const total = initialData.details.reduce(
+				(sum, p) => sum + (parseFloat(p.sale_price) || 0),
+				0
+			);
 			let vat = 0;
 			let grandTotal = total;
 
@@ -111,7 +114,7 @@ const QuotationFormModal = ({
 			const requestBody = {
 				sale_number: newData.sale_number,
 				sale_date: newData.sale_date,
-				cus_id: newData.cus_id,
+				cus_id: newData.cus_id || null,
 				bus_id:
 					newData.bus_id ||
 					businessData?.business?.bus_id ||

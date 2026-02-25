@@ -71,7 +71,10 @@ const InvoiceFormModal = ({
 
 	const [formData, setFormData] = useState(() => {
 		if (initialData && isEditMode) {
-			const total = initialData.details.reduce((sum, p) => sum + (parseFloat(p.sale_price) || 0), 0);
+			const total = initialData.details.reduce(
+				(sum, p) => sum + (parseFloat(p.sale_price) || 0),
+				0
+			);
 			let vat = 0;
 			let grandTotal = total;
 
@@ -169,7 +172,7 @@ const InvoiceFormModal = ({
 			const requestBody = {
 				inv_num: newData.inv_num,
 				inv_date: newData.inv_date,
-				cus_id: newData.cus_id,
+				cus_id: newData.cus_id || null,
 				bus_id:
 					newData.bus_id ||
 					businessData?.business?.bus_id ||
@@ -184,7 +187,7 @@ const InvoiceFormModal = ({
 				credit_expired_date: newData.credit_expired_date,
 				status: newData.status,
 				products: products,
-				sale_id: newData.sale_id, // Include sale_id
+				sale_id: newData.sale_id || null, // Include sale_id
 			};
 
 			const res = await fetchApi(`${config.url}/Invoice/createInvoice`, {
@@ -256,7 +259,7 @@ const InvoiceFormModal = ({
 				pro_unti: form.unit || "",
 			}));
 
-			console.log('products',products);
+			console.log("products", products);
 
 			const requestBody = {
 				...updatedData,
