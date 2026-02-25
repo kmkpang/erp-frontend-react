@@ -113,6 +113,7 @@ const InvoiceFormModal = ({
 				grand_total: grandTotal || 0,
 				vat: vat,
 				total_grand: initialData.sale_totalprice || 0,
+				remark: initialData.invoice_remark || initialData.remark || "",
 			};
 		}
 		return getInitialFormState();
