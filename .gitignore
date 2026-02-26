@@ -29,3 +29,7 @@ test-results/
 playwright.config.ts
 e2e/
 tests/
+
+.env
+.env.*
+*.env
