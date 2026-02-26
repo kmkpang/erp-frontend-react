@@ -88,7 +88,7 @@ export const generatePDF = async (
 
 	// Date Formatting
 	// Prefer inv_date, fallback to billing_date
-	const dateStr = row.inv_date || row.billing_date;
+	const dateStr = row.quotation_start_date || row.inv_date || row.billing_date;
 	let billingDate = new Date();
 	if (dateStr) {
 		billingDate = new Date(dateStr);
