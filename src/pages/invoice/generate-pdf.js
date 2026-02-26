@@ -152,33 +152,43 @@ export const generatePDF = async (
 
 	// Customer & Document Info
 	const renderSectionBoxes = () => {
+		// Calculate the Reference (Quotation)
+		let referenceText = "-";
+		let referenceLabel = "อ้างอิง / Ref. : ";
+		if (row.quotation_num && !row.quotation_num.includes("QT-AUTO")) {
+			referenceLabel = "ใบเสนอราคา";
+			referenceText = row.quotation_num;
+		}
+
 		// Customer Box
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
-		doc.rect(10, 60, 130, 35);
+		doc.rect(10, 60, 130, 45);
 
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(12);
 		doc.text("ชื่อลูกค้า / Customer:", 12, 65);
 		doc.text("ที่อยู่ / Address:", 12, 75);
 		doc.text("เบอร์โทรศัพท์", 12, 85);
-		doc.text("เลขประจำตัวผู้เสียภาษี", 12, 90);
+		doc.text("เลขประจำตัวผู้เสียภาษี", 12, 95);
 
 		doc.setFont("THSarabunNew", "normal");
 		doc.text(row.cus_name || "-", 45, 65);
 		const cusAddressLines = doc.splitTextToSize(row.cus_address || "-", 90);
 		doc.text(cusAddressLines, 45, 75);
 		doc.text(formatPhoneNumber(row.cus_tel) || "-", 45, 85);
-		doc.text(row.cus_tax || "-", 45, 90);
+		doc.text(row.cus_tax || "-", 45, 95);
 
 		// Billing Info Box
-		doc.rect(142, 60, 58, 35);
+		doc.rect(142, 60, 58, 45);
 		doc.setFont("THSarabunNew", "normal");
-		doc.text("เลขที่ / No.", 145, 78);
-		doc.text("วันที่ / Date", 145, 88);
+		doc.text("เลขที่ / No.", 145, 75);
+		doc.text("วันที่ / Date", 145, 85);
+		doc.text("อ้างอิง / Ref.", 145, 95);
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.text(docNumber, 170, 78);
-		doc.text(displayDate, 170, 88);
+		doc.text(docNumber, 170, 75);
+		doc.text(displayDate, 170, 85);
+		doc.text(`${referenceLabel} ${referenceText}`, 145, 100);
 	};
 
 	// Calculations for footer
@@ -344,7 +354,7 @@ export const generatePDF = async (
 	});
 
 	autoTable(doc, {
-		startY: 100,
+		startY: 110,
 		head: [["ลำดับที่", "รายการ", "จำนวน", "ราคา/หน่วย", "จำนวนเงิน"]],
 		body: tableData,
 		theme: "grid",
@@ -370,7 +380,7 @@ export const generatePDF = async (
 			3: { cellWidth: 28, halign: "right" },
 			4: { cellWidth: 30, halign: "right" },
 		},
-		margin: { top: 100, left: 10, right: 10, bottom: 20 },
+		margin: { top: 110, left: 10, right: 10, bottom: 20 },
 		didDrawPage: function () {
 			renderHeader();
 			renderSectionBoxes();
