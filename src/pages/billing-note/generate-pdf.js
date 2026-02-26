@@ -132,7 +132,7 @@ export const generatePDF = async (
 		doc.rect(140, 10, 60, 20);
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(18);
-		doc.text("ใบกำกับภาษี/ใบเสร็จรับเงิน", 170, 22, { align: "center" });
+		doc.text("ใบเสร็จรับเงิน/ใบกำกับภาษี", 170, 22, { align: "center" });
 
 		// Original mark
 		doc.setTextColor(255, 0, 0);

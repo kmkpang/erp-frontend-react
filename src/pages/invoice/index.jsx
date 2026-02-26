@@ -226,6 +226,11 @@ const Invoice = () => {
 								render: (val) => `${parseFloat(val).toLocaleString()} บาท`,
 							},
 							{
+								label: "อ้างอิงใบเสนอราคา",
+								key: "quotation_num",
+								align: "center",
+							},
+							{
 								label: "สถานะ",
 								key: "status",
 								align: "center",
