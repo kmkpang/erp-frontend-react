@@ -292,8 +292,8 @@ export const generatePDF = async (
 			finalY + 5,
 			"เงินโอน",
 			row.payment_method === "เงินโอน" ||
-				row.payments === "MobileBank" ||
-				row.payments === "เงินโอน"
+			row.payments === "MobileBank" ||
+			row.payments === "เงินโอน"
 		);
 		drawCheckbox(
 			125,
@@ -356,7 +356,7 @@ export const generatePDF = async (
 
 		doc.setFont("THSarabunNew", "normal");
 		doc.text("ลูกค้า/ผู้ชำระเงิน", 41, sigY + 5, { align: "center" });
-		doc.text("ผู้ผลิต", 103, sigY + 5, { align: "center" });
+		doc.text("ผู้รับเงิน", 103, sigY + 5, { align: "center" });
 
 		// Remove "บริษัท" and "จำกัด" (including potential decomposed vowel forms)
 		const bus_name = (businessData?.bus_name || "")
@@ -404,9 +404,9 @@ export const generatePDF = async (
 		return [
 			index + 1,
 			productName +
-				(item.description || item.product_detail
-					? "\n" + (item.description || item.product_detail)
-					: ""),
+			(item.description || item.product_detail
+				? "\n" + (item.description || item.product_detail)
+				: ""),
 			parseFloat(item.sale_qty).toLocaleString(),
 			unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2 }),
 			parseFloat(item.sale_price).toLocaleString("en-US", { minimumFractionDigits: 2 }),
