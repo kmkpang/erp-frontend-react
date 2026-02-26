@@ -207,7 +207,7 @@ export const generatePDF = async (
 			doc.addPage();
 			renderHeader();
 			renderSectionBoxes();
-			finalY = 100;
+			finalY = 110;
 		}
 
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
@@ -347,9 +347,9 @@ export const generatePDF = async (
 		return [
 			index + 1,
 			productName +
-				(item.description || item.product_detail
-					? "\n" + (item.description || item.product_detail)
-					: ""),
+			(item.description || item.product_detail
+				? "\n" + (item.description || item.product_detail)
+				: ""),
 			parseFloat(item.sale_qty).toLocaleString(),
 			unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2 }),
 			parseFloat(item.sale_price).toLocaleString("en-US", { minimumFractionDigits: 2 }),

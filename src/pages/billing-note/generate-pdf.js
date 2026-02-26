@@ -222,7 +222,7 @@ export const generatePDF = async (
 			doc.addPage();
 			renderHeader();
 			renderSectionBoxes();
-			finalY = 100;
+			finalY = 110;
 		}
 
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
