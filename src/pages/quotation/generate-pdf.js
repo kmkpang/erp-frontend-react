@@ -188,7 +188,7 @@ export const generatePDF = async (
 		// Price includes VAT
 		netAmount = price;
 		vatAmount = (price * 7) / 107;
-		finalTotal = (price * 100) / 107;
+		finalTotal = price;
 	} else if (row.vatType === "excluded-vat") {
 		// Price excludes VAT
 		finalTotal = price;
@@ -228,40 +228,52 @@ export const generatePDF = async (
 		);
 
 		// VAT
-		doc.rect(summaryX, finalY + 10, summaryW, 10);
-		doc.text("VAT", summaryX + 2, finalY + 14);
-		doc.text("7%", summaryX + 2, finalY + 18);
-		const vatDisplay =
-			row.vatType === "non-vat"
-				? ""
-				: vatAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-		doc.text(vatDisplay, summaryX + summaryW - 2, finalY + 17, { align: "right" });
+		const isIncludedVat = row.vatType === "included-vat";
+		const netY = isIncludedVat ? finalY + 10 : finalY + 20;
 
-		// Net Amount
-		doc.setFillColor(255, 235, 204);
-		doc.rect(summaryX, finalY + 20, 30, 15, "F"); // Label bg
-		doc.rect(summaryX, finalY + 20, summaryW, 15); // Outline
+		if (!isIncludedVat) {
+			doc.rect(summaryX, finalY + 10, summaryW, 10);
+			doc.text("VAT", summaryX + 2, finalY + 14);
+			doc.text("7%", summaryX + 2, finalY + 18);
+			const vatDisplay =
+				row.vatType === "non-vat"
+					? ""
+					: vatAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+			doc.text(vatDisplay, summaryX + summaryW - 2, finalY + 17, { align: "right" });
+			// Net Amount
+			doc.setFillColor(255, 235, 204);
+			doc.rect(summaryX, netY, 30, 15, "F"); // Label bg
+			doc.rect(summaryX, netY, summaryW, 15); // Outline
 
-		doc.setFont("THSarabunNew", "normal");
-		doc.text("ยอดเงินสุทธิ", summaryX + 2, finalY + 26);
-		doc.text("NET AMOUNT", summaryX + 2, finalY + 32);
-		doc.setFontSize(12);
-		doc.text(
-			netAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-			198,
-			finalY + 28,
-			{ align: "right" }
-		);
+			doc.setFont("THSarabunNew", "normal");
+			doc.text("ยอดเงินสุทธิ", summaryX + 2, netY + 6);
+			doc.text("NET AMOUNT", summaryX + 2, netY + 12);
+			doc.setFontSize(12);
+			doc.text(
+				netAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+				198,
+				netY + 8,
+				{ align: "right" }
+			);
+		}
+
+
+		if (isIncludedVat) {
+			doc.setFontSize(12);
+			doc.setTextColor(255, 0, 0);
+			doc.text("**ราคานี้รวมภาษีมูลค่าเพิ่มแล้ว", summaryX, netY + 5, { align: "left" });
+		}
 
 		// Text Amount Box
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(13);
+		doc.setTextColor(0, 0, 0);
 
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
-		doc.rect(40, finalY + 27, 95, 10);
-		doc.text("ตัวอักษร", 10, finalY + 33);
+		doc.rect(40, netY + 7, 95, 10);
+		doc.text("ตัวอักษร", 10, netY + 13);
 		doc.setTextColor(blueColor[0], blueColor[1], blueColor[2]);
-		doc.text(`( ${toThaiBaht(netAmount)} )`, 87.5, finalY + 33, { align: "center" });
+		doc.text(`( ${toThaiBaht(netAmount)} )`, 87.5, netY + 13, { align: "center" });
 		doc.setTextColor(0, 0, 0);
 
 		// Signatures

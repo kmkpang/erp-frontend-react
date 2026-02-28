@@ -145,7 +145,7 @@ export const generatePDF = async (
 	const renderSectionBoxes = () => {
 		// Calculate the Reference (Invoice or Quotation)
 		let referenceText = "-";
-		let referenceLabel = "อ้างอิง / Ref. : ";
+		let referenceLabel = "";
 		if (row.invoice_number && !row.invoice_number.includes("IV-AUTO")) {
 			referenceLabel = "ใบแจ้งหนี้";
 			referenceText = row.invoice_number;
@@ -203,7 +203,7 @@ export const generatePDF = async (
 		// Price includes VAT
 		netAmount = price;
 		vatAmount = (price * 7) / 107;
-		finalTotal = (price * 100) / 107;
+		finalTotal = price;
 	} else if (row.vatType === "excluded-vat") {
 		// Price excludes VAT
 		finalTotal = price;
@@ -242,33 +242,47 @@ export const generatePDF = async (
 		);
 
 		// VAT
-		doc.rect(summaryX, finalY + 10, summaryW, 10);
-		doc.text("VAT", summaryX + 2, finalY + 14);
-		doc.text("7%", summaryX + 2, finalY + 18);
-		const vatDisplay =
-			row.vatType === "non-vat"
-				? ""
-				: vatAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-		doc.text(vatDisplay, summaryX + summaryW - 2, finalY + 17, { align: "right" });
+		const isIncludedVat = row.vatType === "included-vat";
+		const netY = isIncludedVat ? finalY + 10 : finalY + 20;
 
-		// Net Amount
-		doc.setFillColor(255, 235, 204);
-		doc.rect(summaryX, finalY + 20, 30, 15, "F"); // Label bg
-		doc.rect(summaryX, finalY + 20, summaryW, 15); // Outline
+		if (!isIncludedVat) {
+			doc.rect(summaryX, finalY + 10, summaryW, 10);
+			doc.text("VAT", summaryX + 2, finalY + 14);
+			doc.text("7%", summaryX + 2, finalY + 18);
+			const vatDisplay =
+				row.vatType === "non-vat"
+					? ""
+					: vatAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+			doc.text(vatDisplay, summaryX + summaryW - 2, finalY + 17, { align: "right" });
+			// Net Amount
+			doc.setFillColor(255, 235, 204);
+			doc.rect(summaryX, netY, 30, 15, "F"); // Label bg
+			doc.rect(summaryX, netY, summaryW, 15); // Outline
 
-		doc.setFont("THSarabunNew", "normal");
-		doc.text("ยอดเงินสุทธิ", summaryX + 2, finalY + 26);
-		doc.text("NET AMOUNT", summaryX + 2, finalY + 32);
-		doc.setFontSize(16);
-		doc.text(
-			netAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-			198,
-			finalY + 28,
-			{ align: "right" }
-		);
+			doc.setFont("THSarabunNew", "normal");
+			doc.text("ยอดเงินสุทธิ", summaryX + 2, netY + 6);
+			doc.text("NET AMOUNT", summaryX + 2, netY + 12);
+			doc.setFontSize(16);
+			doc.text(
+				netAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+				198,
+				netY + 8,
+				{ align: "right" }
+			);
+		}
+
+
+		if (isIncludedVat) {
+			doc.setFontSize(12);
+			doc.setTextColor(255, 0, 0);
+			doc.text("**ราคานี้รวมภาษีมูลค่าเพิ่มแล้ว", summaryX, netY + 5, { align: "left" });
+		}
 
 		// Payment Section (Left side)
+		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(13);
+		doc.setTextColor(0, 0, 0);
+
 		doc.text("รายการรับชำระเงิน :", 10, finalY + 5);
 
 		const drawCheckbox = (x, y, label, checked = false) => {
@@ -327,8 +341,8 @@ export const generatePDF = async (
 			}
 		}
 		doc.text("วันที่ทำรายการ/Date", 75, finalY + 22);
-		doc.text(payDate, 108, finalY + 22);
-		doc.text("...............................................", 108, finalY + 22.5);
+		doc.text(payDate, 105, finalY + 22);
+		doc.text("...............................................", 103, finalY + 22.5);
 
 		// Text Amount Box
 		doc.setFont("THSarabunNew", "normal");
