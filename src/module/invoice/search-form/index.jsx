@@ -20,7 +20,6 @@ const SearchForm = ({ onSearch }) => {
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
-		console.log(name, value);
 		setCriteria((prev) => ({
 			...prev,
 			[name]: value,

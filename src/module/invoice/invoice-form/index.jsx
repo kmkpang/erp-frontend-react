@@ -210,13 +210,11 @@ const InvoiceFormModal = ({
 			return json;
 		},
 		onSuccess: () => {
-			console.log("Invoice added successfully");
 			queryClient.invalidateQueries(["quotations"]);
 			onClose();
 			success("เพิ่มข้อมูลสำเร็จ");
 		},
 		onError: (err) => {
-			console.log(err);
 			error(err.message, "เพิ่มข้อมูลล้มเหลว");
 		},
 	});
@@ -228,9 +226,8 @@ const InvoiceFormModal = ({
 			if (banks.length > 0) {
 				const bank = banks[0];
 				// Format matching user request: "โอนเงินชําระค่าสินค้า ที่ ..."
-				const bankStr = `${bank.bank_name ? "ธนาคาร" + bank.bank_name : ""} ( ${
-					bank.bank_account || ""
-				} ) ${bank.bank_number || ""}`;
+				const bankStr = `${bank.bank_name ? "ธนาคาร" + bank.bank_name : ""} ( ${bank.bank_account || ""
+					} ) ${bank.bank_number || ""}`;
 
 				setFormData((prev) => ({
 					...prev,
@@ -259,8 +256,6 @@ const InvoiceFormModal = ({
 				product_detail: form.description || form.product_detail || "",
 				pro_unti: form.unit || "",
 			}));
-
-			console.log("products", products);
 
 			const requestBody = {
 				...updatedData,

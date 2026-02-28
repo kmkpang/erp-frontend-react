@@ -120,8 +120,6 @@ const Invoice = () => {
 		return data;
 	}, [getInvoiceData, searchCriteria]);
 
-	console.log("invoiceData", invoiceData);
-
 	// Actions
 	const handleClosePopup = () => {
 		setIsPopupOpen(false);

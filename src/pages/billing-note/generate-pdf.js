@@ -120,8 +120,6 @@ export const generatePDF = async (
 		const addressLines = doc.splitTextToSize(businessData?.bus_address || "", 100);
 		doc.text(addressLines, 10, 38);
 		doc.text(`เลขประจำตัวผู้เสียภาษี  ${businessData?.bus_tax || "-"}`, 10, 51);
-
-		console.log("businessData", businessData);
 		const tel = formatPhoneNumber(businessData?.bus_tel) || "-";
 		const email = businessData?.bus_email ? `      E-mail : ${businessData.bus_email}` : "";
 		doc.text(`โทร  ${tel}${email}`, 10, 56);
