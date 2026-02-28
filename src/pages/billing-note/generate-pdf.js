@@ -70,6 +70,8 @@ export const generatePDF = async (
 	const orangeColor = [255, 165, 0];
 	const blueColor = [0, 87, 183];
 
+	const bData = businessData?.business || businessData || {};
+
 	// Load Fonts
 	try {
 		const thSarabunNew = (await import("../../font/THSarabunNew-normal.js")).default;
@@ -97,9 +99,9 @@ export const generatePDF = async (
 	// Header Section
 	const renderHeader = () => {
 		// Logo
-		if (businessData?.bus_logo) {
+		if (bData?.bus_logo) {
 			try {
-				doc.addImage(businessData.bus_logo, "JPEG", 10, 10, 25, 20);
+				doc.addImage(bData.bus_logo, "JPEG", 10, 10, 25, 20);
 			} catch (e) {
 				console.warn("Logo load failed", e);
 			}
@@ -108,20 +110,20 @@ export const generatePDF = async (
 		// Company Info
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(22);
-		doc.text(businessData?.bus_name || "-", 55, 18);
+		doc.text(bData?.bus_name || "-", 55, 18);
 
-		if (businessData?.bus_code === "00000") {
+		if (bData?.bus_code === "00000") {
 			doc.setFontSize(14);
 			doc.text("(สำนักงานใหญ่)", 55, 24);
 		}
 
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(14);
-		const addressLines = doc.splitTextToSize(businessData?.bus_address || "", 100);
+		const addressLines = doc.splitTextToSize(bData?.bus_address || "", 100);
 		doc.text(addressLines, 10, 38);
-		doc.text(`เลขประจำตัวผู้เสียภาษี  ${businessData?.bus_tax || "-"}`, 10, 51);
-		const tel = formatPhoneNumber(businessData?.bus_tel) || "-";
-		const email = businessData?.bus_email ? `      E-mail : ${businessData.bus_email}` : "";
+		doc.text(`เลขประจำตัวผู้เสียภาษี  ${bData?.bus_tax || "-"}`, 10, 51);
+		const tel = formatPhoneNumber(bData?.bus_tel) || "-";
+		const email = bData?.bus_email ? `      E-mail : ${bData.bus_email}` : "";
 		doc.text(`โทร  ${tel}${email}`, 10, 56);
 
 		// Title Box
@@ -186,13 +188,22 @@ export const generatePDF = async (
 		doc.text("อ้างอิง / Ref.", 145, 95);
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.text(row.billing || "", 170, 75);
+		const docNumber = row.billing || row.billing_number || "-";
+		doc.text(docNumber, 170, 75);
 		doc.text(displayDate, 170, 85);
 		doc.text(`${referenceLabel} ${referenceText}`, 145, 100);
 	};
 
 	// Calculations for footer
-	const price = parseFloat(row.sale_totalprice || 0);
+	const calculateInitialPrice = () => {
+		let p = parseFloat(row.sale_totalprice || row.total_price || row.total_grand || 0);
+		if (p === 0 && products && products.length > 0) {
+			p = products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
+		}
+		return p;
+	};
+
+	const price = calculateInitialPrice();
 	let finalTotal = price; // รวมเงิน (Total / Subtotal)
 	let vatAmount = 0;
 	let netAmount = price; // ยอดเงินสุทธิ (Net Amount)
@@ -371,7 +382,7 @@ export const generatePDF = async (
 		doc.text("ผู้รับเงิน", 103, sigY + 5, { align: "center" });
 
 		// Remove "บริษัท" and "จำกัด" (including potential decomposed vowel forms)
-		const bus_name = (businessData?.bus_name || "")
+		const bus_name = (bData?.bus_name || "")
 			.replace(/บริษัท/g, "")
 			.replace(/จำกัด|จํากัด/g, "") // Standard and Decomposed
 			.trim();

@@ -86,6 +86,7 @@ const BillingNote = () => {
 			const json = await res.json();
 			return json.data;
 		},
+		staleTime: Infinity,
 	});
 
 	// Derived Data
@@ -151,13 +152,27 @@ const BillingNote = () => {
 	});
 
 	// Handlers
-	const handleAdd = () => {
+	const handleAdd = async () => {
+		// Force refetch to ensure fresh data in multi-user environment
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: ["customers"] }),
+			queryClient.invalidateQueries({ queryKey: ["products"] }),
+			queryClient.invalidateQueries({ queryKey: ["business"] }),
+		]);
+
 		setEditingItem(null);
 		setIsEditMode(false);
 		setShowModeSelectionModal(true);
 	};
 
-	const handleEdit = (item) => {
+	const handleEdit = async (item) => {
+		// Force refetch for edit as well
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: ["customers"] }),
+			queryClient.invalidateQueries({ queryKey: ["products"] }),
+			queryClient.invalidateQueries({ queryKey: ["business"] }),
+		]);
+
 		setEditingItem(item);
 		setIdEditing(item.billing_id);
 		setIsEditMode(true);
@@ -217,9 +232,8 @@ const BillingNote = () => {
 					{/* Customer Tabs */}
 					<div className="d-flex mb-4" style={{ borderBottom: "1px solid #dee2e6" }}>
 						<button
-							className={`btn rounded-0 px-4 py-2 border-0 bg-transparent ${
-								customerFilter === "with_customer" ? "text-primary fw-bold" : "text-muted"
-							}`}
+							className={`btn rounded-0 px-4 py-2 border-0 bg-transparent ${customerFilter === "with_customer" ? "text-primary fw-bold" : "text-muted"
+								}`}
 							style={{
 								borderBottom:
 									customerFilter === "with_customer"
@@ -233,9 +247,8 @@ const BillingNote = () => {
 							มีข้อมูลลูกค้า
 						</button>
 						<button
-							className={`btn rounded-0 px-4 py-2 border-0 bg-transparent ${
-								customerFilter === "without_customer" ? "text-primary fw-bold" : "text-muted"
-							}`}
+							className={`btn rounded-0 px-4 py-2 border-0 bg-transparent ${customerFilter === "without_customer" ? "text-primary fw-bold" : "text-muted"
+								}`}
 							style={{
 								borderBottom:
 									customerFilter === "without_customer"
@@ -355,6 +368,7 @@ const BillingNote = () => {
 					customerOptions={customerQuery}
 					productOptions={productQuery}
 					requireCustomer={requireCustomer}
+					onSaveSuccess={(data) => generatePDF("preview", data)}
 				/>
 			)}
 

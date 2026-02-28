@@ -70,6 +70,8 @@ export const generatePDF = async (
 	const orangeColor = [255, 165, 0];
 	const blueColor = [0, 87, 183];
 
+	const bData = businessData?.business || businessData || {};
+
 	// Load Fonts
 	try {
 		// Paths relative to this file. Assuming font folder is at ../../font
@@ -100,14 +102,14 @@ export const generatePDF = async (
 	const displayDate = `${day}/${month}/${buddhistYear}`;
 
 	// Document Number
-	const docNumber = row.quotation_num || "-";
+	const docNumber = row.quotation_num || row.sale_number || "-";
 
 	// Header Section
 	const renderHeader = () => {
 		// Logo
-		if (businessData?.business?.bus_logo) {
+		if (bData?.bus_logo) {
 			try {
-				doc.addImage(businessData.business.bus_logo, "JPEG", 10, 10, 25, 20);
+				doc.addImage(bData.bus_logo, "JPEG", 10, 10, 25, 20);
 			} catch (e) {
 				console.warn("Logo load failed", e);
 			}
@@ -116,22 +118,22 @@ export const generatePDF = async (
 		// Company Info
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(20);
-		doc.text(businessData.business?.bus_name || "-", 55, 18);
+		doc.text(bData?.bus_name || "-", 55, 18);
 
-		if (businessData.business?.bus_code === "00000") {
+		if (bData?.bus_code === "00000") {
 			doc.setFontSize(12);
 			doc.text("(สำนักงานใหญ่)", 55, 24);
 		}
 
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(12);
-		const addressLines = doc.splitTextToSize(businessData.business?.bus_address || "", 100);
+		const addressLines = doc.splitTextToSize(bData?.bus_address || "", 100);
 		doc.text(addressLines, 10, 38);
-		doc.text(`เลขประจำตัวผู้เสียภาษี  ${businessData.business?.bus_tax || "-"}`, 10, 51);
+		doc.text(`เลขประจำตัวผู้เสียภาษี  ${bData?.bus_tax || "-"}`, 10, 51);
 
-		const tel = formatPhoneNumber(businessData.business?.bus_tel) || "-";
-		const email = businessData.business?.bus_email
-			? `      E-mail : ${businessData.business.bus_email}`
+		const tel = formatPhoneNumber(bData?.bus_tel) || "-";
+		const email = bData?.bus_email
+			? `      E-mail : ${bData.bus_email}`
 			: "";
 		doc.text(`โทร  ${tel}${email}`, 10, 56);
 
@@ -177,7 +179,15 @@ export const generatePDF = async (
 	};
 
 	// Calculations for footer
-	const price = parseFloat(row.sale_totalprice || row.total_price || 0);
+	const calculateInitialPrice = () => {
+		let p = parseFloat(row.sale_totalprice || row.total_price || row.total_grand || 0);
+		if (p === 0 && products && products.length > 0) {
+			p = products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
+		}
+		return p;
+	};
+
+	const price = calculateInitialPrice();
 	// Basic calculation logic same as BillingNote, assuming fields are consistent
 	// Quotation usually excludes VAT until final total? Or depends on vatType.
 	let finalTotal = price;
@@ -295,7 +305,7 @@ export const generatePDF = async (
 		doc.text("ผู้เสนอ", 103, sigY + 5, { align: "center" });
 
 		// Remove "บริษัท" and "จำกัด" (including potential decomposed vowel forms)
-		let rawBusName = businessData.business.bus_name || "";
+		let rawBusName = bData.bus_name || "";
 
 		const bus_name = rawBusName
 			.replace(/บริษัท/g, "")

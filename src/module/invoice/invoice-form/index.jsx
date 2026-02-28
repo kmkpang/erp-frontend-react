@@ -38,6 +38,7 @@ const InvoiceFormModal = ({
 	customerOptions,
 	productOptions,
 	businessData,
+	onSaveSuccess,
 }) => {
 	const queryClient = useQueryClient();
 	const { success, error } = useAlert();
@@ -209,10 +210,14 @@ const InvoiceFormModal = ({
 			}
 			return json;
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries(["quotations"]);
 			onClose();
 			success("เพิ่มข้อมูลสำเร็จ");
+			if (onSaveSuccess) {
+				const mergedData = { ...formData, ...(data?.data || {}) };
+				onSaveSuccess(mergedData);
+			}
 		},
 		onError: (err) => {
 			error(err.message, "เพิ่มข้อมูลล้มเหลว");
@@ -274,10 +279,14 @@ const InvoiceFormModal = ({
 			if (!res.ok) throw new Error("Failed to update invoice");
 			return res.json();
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries(["invoices"]);
 			onClose();
 			success("แก้ไขข้อมูลสำเร็จ");
+			if (onSaveSuccess) {
+				const mergedData = { ...formData, ...(data?.data || {}) };
+				onSaveSuccess(mergedData);
+			}
 		},
 		onError: (err) => {
 			error("เกิดข้อผิดพลาดในการแก้ไขข้อมูล: " + err.message, "แก้ไขข้อมูลล้มเหลว");

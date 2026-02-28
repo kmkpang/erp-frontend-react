@@ -38,6 +38,7 @@ const QuotationFormModal = ({
 	customerOptions,
 	productOptions,
 	businessData,
+	onSaveSuccess,
 }) => {
 	const queryClient = useQueryClient();
 	const { success, error } = useAlert();
@@ -145,10 +146,14 @@ const QuotationFormModal = ({
 			}
 			return json;
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries(["quotations"]);
 			onClose();
 			success("เพิ่มข้อมูลสำเร็จ");
+			if (onSaveSuccess) {
+				const mergedData = { ...formData, ...(data?.data || {}) };
+				onSaveSuccess(mergedData);
+			}
 		},
 		onError: (err) => {
 			error(err.message, "เพิ่มข้อมูลล้มเหลว");
@@ -185,9 +190,8 @@ const QuotationFormModal = ({
 				// Default from business data
 				const bank = banks[0];
 				// Format: "ธนาคารไทยพาณิชย์ ( ร้าน เอช แอนด์ ดี อิงเจ็ท ) 146-279212-6"
-				const bankStr = `${bank.bank_name ? "ธนาคาร" + bank.bank_name : ""} ( ${
-					bank.bank_account || ""
-				} ) ${bank.bank_number || ""}`;
+				const bankStr = `${bank.bank_name ? "ธนาคาร" + bank.bank_name : ""} ( ${bank.bank_account || ""
+					} ) ${bank.bank_number || ""}`;
 				setRemarkParams((prev) => ({ ...prev, bank: bankStr }));
 			}
 		}
@@ -247,10 +251,14 @@ const QuotationFormModal = ({
 			if (!res.ok) throw new Error("Failed to update quotation");
 			return res.json();
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries(["quotations"]);
 			onClose();
 			success("แก้ไขข้อมูลสำเร็จ");
+			if (onSaveSuccess) {
+				const mergedData = { ...formData, ...(data?.data || {}) };
+				onSaveSuccess(mergedData);
+			}
 		},
 		onError: (err) => {
 			error("เกิดข้อผิดพลาดในการแก้ไขข้อมูล: " + err.message, "แก้ไขข้อมูลล้มเหลว");

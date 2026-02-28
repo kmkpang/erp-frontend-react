@@ -42,6 +42,7 @@ const BillingNoteFormModal = ({
 	customerOptions,
 	productOptions,
 	requireCustomer,
+	onSaveSuccess,
 }) => {
 	const queryClient = useQueryClient();
 	const { success, error } = useAlert();
@@ -247,10 +248,14 @@ const BillingNoteFormModal = ({
 			}
 			return json;
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries(["billings"]);
 			onClose();
 			success("เพิ่มข้อมูลสำเร็จ");
+			if (onSaveSuccess) {
+				const mergedData = { ...formData, ...(data?.data || {}) };
+				onSaveSuccess(mergedData);
+			}
 		},
 		onError: (err) => {
 			error(err.message, "เพิ่มข้อมูลล้มเหลว");
@@ -287,10 +292,14 @@ const BillingNoteFormModal = ({
 			if (!res.ok) throw new Error("Failed to update billing");
 			return res.json();
 		},
-		onSuccess: () => {
+		onSuccess: (data) => {
 			queryClient.invalidateQueries(["billings"]);
 			onClose();
 			success("แก้ไขข้อมูลสำเร็จ");
+			if (onSaveSuccess) {
+				const mergedData = { ...formData, ...(data?.data || {}) };
+				onSaveSuccess(mergedData);
+			}
 		},
 		onError: (err) => {
 			error("เกิดข้อผิดพลาดในการแก้ไขข้อมูล: " + err.message, "แก้ไขข้อมูลล้มเหลว");

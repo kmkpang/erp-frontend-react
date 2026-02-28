@@ -75,7 +75,7 @@ const Invoice = () => {
 	});
 
 	const { data: businessQuery } = useQuery({
-		queryKey: ["business-quotation"],
+		queryKey: ["business"],
 		queryFn: async () => {
 			const res = await fetchApi(`${config.url}/quotation/getBusinessByID`, {
 				headers: { Authorization: `Bearer ${localStorage.getItem("@accessToken")}` },
@@ -84,6 +84,7 @@ const Invoice = () => {
 			const json = await res.json();
 			return json.data;
 		},
+		staleTime: Infinity,
 	});
 
 	// Derived Data
@@ -149,13 +150,27 @@ const Invoice = () => {
 	});
 
 	// Handlers
-	const handleAdd = () => {
+	const handleAdd = async () => {
+		// Force refetch to ensure fresh data in multi-user environment
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: ["customers"] }),
+			queryClient.invalidateQueries({ queryKey: ["products"] }),
+			queryClient.invalidateQueries({ queryKey: ["business"] }),
+		]);
+
 		setEditingItem(null);
 		setIsEditMode(false);
 		setIsPopupOpen(true);
 	};
 
-	const handleEdit = (item) => {
+	const handleEdit = async (item) => {
+		// Force refetch for edit as well
+		await Promise.all([
+			queryClient.invalidateQueries({ queryKey: ["customers"] }),
+			queryClient.invalidateQueries({ queryKey: ["products"] }),
+			queryClient.invalidateQueries({ queryKey: ["business"] }),
+		]);
+
 		setEditingItem(item);
 		setIdEditing(item.invoice_id);
 		setIsEditMode(true);
@@ -265,6 +280,7 @@ const Invoice = () => {
 					customerOptions={customerQuery}
 					productOptions={productQuery}
 					businessData={businessQuery}
+					onSaveSuccess={(data) => generatePDF("preview", data)}
 				/>
 			)}
 
