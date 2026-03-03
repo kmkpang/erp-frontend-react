@@ -178,6 +178,7 @@ export const generatePDF = async (
 		const cusAddressLines = doc.splitTextToSize(row.cus_address || "-", 90);
 		doc.text(cusAddressLines, 45, 75);
 		doc.text(formatPhoneNumber(row.cus_tel) || "-", 45, 85);
+		doc.text(row.cus_tax || "-", 45, 95);
 		doc.rect(142, 60, 58, 45);
 
 		doc.setFont("THSarabunNew", "normal");
@@ -194,6 +195,9 @@ export const generatePDF = async (
 
 	// Calculations for footer
 	const calculateInitialPrice = () => {
+		if (row.deposit_type === "deposit" && parseFloat(row.deposit_amount) > 0) {
+			return parseFloat(row.deposit_amount);
+		}
 		let p = parseFloat(row.total_grand || row.total_price || row.sale_totalprice || 0);
 		if (p === 0 && products && products.length > 0) {
 			p = products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
@@ -350,27 +354,63 @@ export const generatePDF = async (
 	// We will draw headers dynamically on each page loop (didDrawPage)
 	// so they repeat correctly if the table is long
 	// Table
-	const tableData = products.map((item, index) => {
-		// Find product in master list if name is missing
-		const productDef = productQuery?.find(
-			(p) => p.productID === item.productID || p.productname === item.productID
-		);
-		const productName = item.productName || item.productname || productDef?.productname || "";
-		const unitPrice = parseFloat(
-			item.price || productDef?.price || item.sale_price / item.sale_qty || 0
-		);
+	let tableData = [];
 
-		return [
-			index + 1,
-			productName +
-			(item.description || item.product_detail
-				? "\n" + (item.description || item.product_detail)
-				: ""),
-			parseFloat(item.sale_qty).toLocaleString(),
-			unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2 }),
-			parseFloat(item.sale_price).toLocaleString("en-US", { minimumFractionDigits: 2 }),
+	if (row.deposit_type === "deposit") {
+		const origTotal = parseFloat(row.total_grand || row.total_price || row.sale_totalprice || 0) || products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
+		const depositAmt = parseFloat(row.deposit_amount) || 0;
+		const pct = origTotal > 0 ? Math.round((depositAmt / origTotal) * 100) : 0;
+
+		let refText = "";
+		if (row.quotation_num && !row.quotation_num.includes("QT-AUTO")) {
+			refText = `\n**รายละเอียดงานตามใบเสนอราคาเลขที่ ${row.quotation_num}`;
+		}
+
+		let description = `มัดจำค่าติดตั้งป้าย ${pct}% ก่อนเริ่มงาน`;
+
+		products.forEach(item => {
+			const productDef = productQuery?.find(
+				(p) => p.productID === item.productID || p.productname === item.productname
+			);
+			const pName = item.productName || item.productname || productDef?.productname || "";
+			const pPrice = parseFloat(item.sale_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2 });
+			description += `\n${pName}                                ${pPrice}`;
+		});
+		description += `\n\nรวมราคาตามใบเสนอราคา                 ${origTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+		description += refText;
+
+		tableData = [
+			[
+				1,
+				description,
+				"1",
+				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2 }),
+				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2 }),
+			]
 		];
-	});
+	} else {
+		tableData = products.map((item, index) => {
+			// Find product in master list if name is missing
+			const productDef = productQuery?.find(
+				(p) => p.productID === item.productID || p.productname === item.productID
+			);
+			const productName = item.productName || item.productname || productDef?.productname || "";
+			const unitPrice = parseFloat(
+				item.price || productDef?.price || item.sale_price / item.sale_qty || 0
+			);
+
+			return [
+				index + 1,
+				productName +
+				(item.description || item.product_detail
+					? "\n" + (item.description || item.product_detail)
+					: ""),
+				parseFloat(item.sale_qty).toLocaleString(),
+				unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2 }),
+				parseFloat(item.sale_price).toLocaleString("en-US", { minimumFractionDigits: 2 }),
+			];
+		});
+	}
 
 	autoTable(doc, {
 		startY: 110,
