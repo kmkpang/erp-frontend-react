@@ -31,6 +31,9 @@ const getInitialFormState = () => ({
 	bus_id: localStorage.getItem("@bus_id"),
 	employeeID: localStorage.getItem("user_id"),
 	employeeName: localStorage.getItem("user_name"),
+	deposit_type: "full", // "full" or "deposit"
+	deposit_amount: "",
+	deposit_percent: "",
 });
 
 const BillingNoteFormModal = ({
@@ -46,7 +49,25 @@ const BillingNoteFormModal = ({
 }) => {
 	const queryClient = useQueryClient();
 	const { success, error } = useAlert();
-	const [sourceType, setSourceType] = useState("none"); // none, quotation, invoice
+	const [sourceType, setSourceType] = useState(() => {
+		if (initialData && isEditMode) {
+			const qtNum = String(initialData.quotation_num || "");
+			const invNum = String(initialData.invoice_number || "");
+			const isAutoQt = !qtNum || qtNum.includes("QT-AUTO");
+			const isAutoInv = !invNum || invNum.includes("IV-AUTO");
+			// Only lock fields if the reference is a real (non-auto) document
+			if (!isAutoInv && invNum) {
+				return "invoice";
+			} else if (!isAutoQt && qtNum) {
+				return "quotation";
+			}
+		}
+		return "none";
+	}); // none, quotation, invoice
+
+	// Deposit Summary State
+	const [depositSummary, setDepositSummary] = useState(null);
+	const [loadingDeposit, setLoadingDeposit] = useState(false);
 
 	// Fetch Pending Quotations
 	const { data: quotations = [] } = useQuery({
@@ -63,7 +84,8 @@ const BillingNoteFormModal = ({
 
 	const pendingQuotations = React.useMemo(() => {
 		if (!quotations) return [];
-		return quotations.filter((q) => q.status !== "Billed" && q.status !== "Cancel");
+		return quotations.filter((q) => q.status !== "Billed" && q.status !== "Cancel" && q.status !== "Invoiced");
+		// "DepositBilled" is allowed so a full receipt can be issued after deposit
 	}, [quotations]);
 
 	// Fetch Pending Invoices
@@ -85,9 +107,9 @@ const BillingNoteFormModal = ({
 			(i) =>
 				i.invoice_status !== "Complete" &&
 				i.invoice_status !== "Billed" &&
-				i.invoice_status !== "Cancel"
+				i.invoice_status !== "Cancel" &&
+				i.invoice_status !== "Issue a receipt" // exclude invoices that already have a receipt
 		);
-		// Assuming 'Complete' or 'Billed' is the final status
 	}, [invoices]);
 
 	const [formData, setFormData] = useState(() => {
@@ -142,13 +164,12 @@ const BillingNoteFormModal = ({
 
 	// Remove hasCustomer state
 
-	const handleSourceSelect = (type, item) => {
+	const handleSourceSelect = async (type, item) => {
 		if (!item) return;
 
-		const newData = { ...getInitialFormState() }; // Reset or keep some? Better reset to avoid conflicts
-		// But keep date/number generated?
+		const newData = { ...getInitialFormState() };
 		newData.billing_number = formData.billing_number;
-		newData.billing_date = formData.billing_date; // Keep current form date
+		newData.billing_date = formData.billing_date;
 
 		newData.cus_id = item.cus_id;
 		newData.cus_name = item.cus_name;
@@ -156,21 +177,10 @@ const BillingNoteFormModal = ({
 		newData.cus_tel = item.cus_tel;
 		newData.cus_tax = item.cus_tax;
 		newData.vatType = item.vatType || "non-vat";
+		newData.quotation_num = item.quotation_num || item.sale_number || "";
+		newData.invoice_number = item.invoice_number || "";
 
-		if (type === "quotation") {
-			newData.sale_id = item.sale_id;
-			newData.invoice_id = null;
-		} else if (type === "invoice") {
-			newData.invoice_id = item.invoice_id;
-			newData.sale_id = item.sale_id; // Invoice usually has sale_id
-		}
-
-		// Map Products
-		// Need to check if item has products/details
-		// If getting list from getInvoice/getQuotation, details might be missing or under different keys
-		// Assuming details/products/quotation_sale_details exists
 		const productsRaw = item.products || item.details || item.quotation_sale_details || [];
-
 		newData.productForms = productsRaw.map((p) => ({
 			...p,
 			productname: p.productname || p.productName || "",
@@ -182,13 +192,70 @@ const BillingNoteFormModal = ({
 			sale_price: p.sale_price || 0,
 		}));
 
-		newData.total_price = item.sale_totalprice || item.total_grand || 0;
-		// Recalculate grand totals will sort itself out via calculateTotals if we trigger it,
-		// but let's pre-fill if available
-		// ...
+		newData.total_price = parseFloat(item.sale_totalprice || item.total_grand || 0);
+
+		let vatAmt = 0;
+		let gTotal = newData.total_price;
+		if (newData.vatType === "included-vat") {
+			vatAmt = (newData.total_price * 7) / 107;
+		} else if (newData.vatType === "excluded-vat") {
+			vatAmt = newData.total_price * 0.07;
+			gTotal = newData.total_price + vatAmt;
+		}
+		newData.vat = vatAmt;
+		newData.grand_total = gTotal;
+
+		if (type === "quotation") {
+			newData.sale_id = item.sale_id;
+			newData.invoice_id = null;
+
+			// Extract deposit percentage from remark
+			let defaultDepositPercent = "";
+			let defaultDepositAmount = "";
+			if (item.remark) {
+				const depositMatch = item.remark.match(/2\. มัดจําค่าสินค้า (.*?)%/);
+				if (depositMatch && depositMatch[1]) {
+					const pct = parseFloat(depositMatch[1]);
+					if (!isNaN(pct)) {
+						defaultDepositPercent = pct;
+						defaultDepositAmount = (newData.total_price * pct) / 100;
+					}
+				}
+			}
+			newData.deposit_type = "full";
+			newData.deposit_amount = defaultDepositAmount !== "" ? defaultDepositAmount.toFixed(2) : "";
+			newData.deposit_percent = defaultDepositPercent !== "" ? defaultDepositPercent : "";
+		} else if (type === "invoice") {
+			newData.invoice_id = item.invoice_id;
+			newData.sale_id = item.sale_id;
+			// Copy deposit info directly from the invoice
+			newData.deposit_type = item.deposit_type || "full";
+			newData.deposit_amount = item.deposit_amount || "";
+			newData.deposit_percent = "";
+			newData.total_deposited = item.total_deposited || 0;
+		}
 
 		setFormData((prev) => ({ ...prev, ...newData }));
-		// Trigger calculation logic if needed (via effect or direct helper call if extracted)
+
+		// Fetch deposit summary when selecting from quotation or invoice
+		if ((type === "quotation" || type === "invoice") && item.sale_id) {
+			try {
+				setLoadingDeposit(true);
+				const res = await fetchApi(`${config.url}/Invoice/getDepositSummary/${item.sale_id}`, {
+					headers: { Authorization: `Bearer ${localStorage.getItem("@accessToken")}` },
+				});
+				if (res.ok) {
+					const json = await res.json();
+					setDepositSummary(json.data);
+				}
+			} catch {
+				setDepositSummary(null);
+			} finally {
+				setLoadingDeposit(false);
+			}
+		} else {
+			setDepositSummary(null);
+		}
 	};
 
 	// Mutations
@@ -223,6 +290,8 @@ const BillingNoteFormModal = ({
 				products: products,
 				invoice_id: newData.invoice_id || null,
 				sale_id: newData.sale_id || null,
+				deposit_type: newData.deposit_type || "full",
+				deposit_amount: newData.deposit_type === "deposit" ? parseFloat(newData.deposit_amount) || null : null,
 			};
 
 			const res = await fetchApi(`${config.url}/Billing/createBilling`, {
@@ -250,10 +319,15 @@ const BillingNoteFormModal = ({
 		},
 		onSuccess: (data) => {
 			queryClient.invalidateQueries(["billings"]);
+			queryClient.invalidateQueries(["invoices"]); // refresh total_deposited in invoice list
+			queryClient.invalidateQueries(["quotations"]); // refresh quotation status
 			onClose();
 			success("เพิ่มข้อมูลสำเร็จ");
 			if (onSaveSuccess) {
 				const mergedData = { ...formData, ...(data?.data || {}) };
+				if (depositSummary && depositSummary.total_deposit_paid > 0) {
+					mergedData.total_deposited = depositSummary.total_deposit_paid;
+				}
 				onSaveSuccess(mergedData);
 			}
 		},
@@ -308,7 +382,26 @@ const BillingNoteFormModal = ({
 
 	const handleInputChange = (e) => {
 		const { name, value } = e.target;
-		setFormData((prev) => ({ ...prev, [name]: value }));
+
+		if (name === "deposit_amount") {
+			const amount = parseFloat(value) || 0;
+			const total = parseFloat(formData.total_price) || 0;
+			let percent = "";
+			if (total > 0) {
+				percent = ((amount / total) * 100).toFixed(2);
+			}
+			setFormData((prev) => ({ ...prev, deposit_amount: value, deposit_percent: percent }));
+		} else if (name === "deposit_percent") {
+			const percent = parseFloat(value) || 0;
+			const total = parseFloat(formData.total_price) || 0;
+			let amount = "";
+			if (total > 0) {
+				amount = ((total * percent) / 100).toFixed(2);
+			}
+			setFormData((prev) => ({ ...prev, deposit_percent: value, deposit_amount: amount }));
+		} else {
+			setFormData((prev) => ({ ...prev, [name]: value }));
+		}
 	};
 
 	const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -514,7 +607,7 @@ const BillingNoteFormModal = ({
 									{sourceType === "quotation" && (
 										<SearchableSelect
 											options={pendingQuotations}
-											value=""
+											value={formData.sale_id || ""}
 											labelKey={(option) => `${option.quotation_num} (${option.cus_name})`}
 											valueKey="sale_id"
 											onChange={(val) => {
@@ -528,7 +621,7 @@ const BillingNoteFormModal = ({
 									{sourceType === "invoice" && (
 										<SearchableSelect
 											options={pendingInvoices}
-											value=""
+											value={formData.invoice_id || ""}
 											labelKey={(option) => `${option.invoice_number} (${option.cus_name})`}
 											valueKey="invoice_id"
 											onChange={(val) => {
@@ -537,6 +630,155 @@ const BillingNoteFormModal = ({
 											}}
 											placeholder="เลือกใบแจ้งหนี้..."
 										/>
+									)}
+
+									{/* Show deposit info badge when invoice is selected */}
+									{sourceType === "invoice" && formData.invoice_id && (
+										<div className="mt-2">
+											{formData.deposit_type === "deposit" ? (() => {
+												const depAmt = parseFloat(formData.deposit_amount || 0);
+												let depVat = 0;
+												let depNet = depAmt;
+												if (formData.vatType === "included-vat") {
+													depVat = (depAmt * 7) / 107;
+												} else if (formData.vatType === "excluded-vat") {
+													depVat = depAmt * 0.07;
+													depNet = depAmt + depVat;
+												}
+												return (
+													<div className="alert alert-warning py-2 mb-0 d-flex flex-column gap-1">
+														<div className="d-flex align-items-center gap-2">
+															<span className="badge bg-warning text-dark">ใบแจ้งหนี้ค่ามัดจำ</span>
+															<span>PDF ใบเสร็จจะเป็น <strong>ใบเสร็จของยอดค่ามัดจำ</strong></span>
+														</div>
+														<div className="text-dark small mt-1">
+															ยอดมัดจำ: <strong>{depAmt.toLocaleString("th-TH", { minimumFractionDigits: 2 })} บาท</strong>
+															{(formData.vatType === "included-vat" || formData.vatType === "excluded-vat") && (
+																<>
+																	<span className="mx-2">|</span>
+																	ภาษี (7%): <strong>{depVat.toLocaleString("th-TH", { minimumFractionDigits: 2 })} บาท</strong>
+																	<span className="mx-2">|</span>
+																	ราคาสุทธิ: <strong>{depNet.toLocaleString("th-TH", { minimumFractionDigits: 2 })} บาท</strong>
+																</>
+															)}
+														</div>
+													</div>
+												);
+											})() : (
+												<div className="alert alert-info py-2 mb-0 d-flex align-items-center gap-2">
+													<span className="badge bg-info text-dark">ใบแจ้งหนี้ยอดเต็ม/ยอดคงเหลือหลังหักมัดจำ</span>
+													<span>PDF ใบเสร็จจะเป็น <strong>ใบเสร็จยอดเต็ม หรือ ใบเสร็จยอดคงเหลือหลังหักมัดจำ</strong></span>
+												</div>
+											)}
+
+											{/* Deposit Summary Box for Invoice */}
+											{loadingDeposit && <div className="text-muted small mt-2">กำลังโหลดข้อมูลมัดจำ...</div>}
+											{depositSummary && !loadingDeposit && formData.deposit_type === "full" && depositSummary.total_deposit_paid > 0 && (
+												<div className="mt-2 p-2 bg-light rounded border">
+													<div className="row text-sm">
+														<div className="col-6">ยอดรวมใบเสนอราคา:</div>
+														<div className="col-6 text-end fw-bold">{parseFloat(depositSummary.total_amount).toLocaleString()} บาท</div>
+														<div className="col-6 text-warning">มัดจำที่จ่ายแล้ว (ใบเสร็จ):</div>
+														<div className="col-6 text-end text-warning fw-bold">-{parseFloat(depositSummary.total_deposit_paid).toLocaleString()} บาท</div>
+														<div className="col-6 text-success fw-bold">ยอดคงเหลือ:</div>
+														<div className="col-6 text-end text-success fw-bold">{parseFloat(depositSummary.remaining_balance).toLocaleString()} บาท</div>
+													</div>
+												</div>
+											)}
+										</div>
+									)}
+
+									{/* Deposit Type Selector — shown when quotation is selected */}
+									{formData.sale_id && sourceType === "quotation" && (
+										<div className="mt-3">
+											<div className="card border-primary">
+												<div className="card-body py-3">
+													<label className="form-label fw-bold">ประเภทใบเสร็จ:</label>
+													<div className="d-flex gap-3 mb-3">
+														<div className="form-check">
+															<input
+																className="form-check-input"
+																type="radio"
+																name="deposit_type"
+																id="bdt_full"
+																value="full"
+																checked={formData.deposit_type === "full"}
+																onChange={handleInputChange}
+															/>
+															<label className="form-check-label" htmlFor="bdt_full">ยอดเต็ม</label>
+														</div>
+														<div className="form-check">
+															<input
+																className="form-check-input"
+																type="radio"
+																name="deposit_type"
+																id="bdt_deposit"
+																value="deposit"
+																checked={formData.deposit_type === "deposit"}
+																onChange={handleInputChange}
+															/>
+															<label className="form-check-label" htmlFor="bdt_deposit">ค่ามัดจำ</label>
+														</div>
+													</div>
+
+													{/* Deposit Amount & Percent Inputs */}
+													{formData.deposit_type === "deposit" && (
+														<div className="row mb-2 g-3">
+															<div className="col-md-6">
+																<label className="form-label">เปอร์เซ็นต์มัดจำ (%):</label>
+																<div className="input-group">
+																	<input
+																		type="number"
+																		className="form-control"
+																		name="deposit_percent"
+																		min="0"
+																		max="100"
+																		step="0.01"
+																		value={formData.deposit_percent}
+																		onChange={handleInputChange}
+																		placeholder="กรอกเปอร์เซ็นต์"
+																		required
+																	/>
+																	<span className="input-group-text">%</span>
+																</div>
+															</div>
+															<div className="col-md-6">
+																<label className="form-label">ยอดมัดจำ (บาท):</label>
+																<div className="input-group">
+																	<input
+																		type="number"
+																		className="form-control"
+																		name="deposit_amount"
+																		min="0"
+																		step="0.01"
+																		max={parseFloat(formData.total_price) || undefined}
+																		value={formData.deposit_amount}
+																		onChange={handleInputChange}
+																		placeholder="กรอกยอดมัดจำ"
+																		required
+																	/>
+																	<span className="input-group-text">บาท</span>
+																</div>
+															</div>
+														</div>
+													)}
+
+													{loadingDeposit && <div className="text-muted small">กำลังโหลดข้อมูลมัดจำ...</div>}
+													{depositSummary && !loadingDeposit && (
+														<div className="mt-2 p-2 bg-light rounded border">
+															<div className="row text-sm">
+																<div className="col-6">ยอดรวมใบเสนอราคา:</div>
+																<div className="col-6 text-end fw-bold">{parseFloat(depositSummary.total_amount).toLocaleString()} บาท</div>
+																<div className="col-6 text-warning">มัดจำที่จ่ายแล้ว (ใบเสร็จ):</div>
+																<div className="col-6 text-end text-warning fw-bold">-{parseFloat(depositSummary.total_deposit_paid).toLocaleString()} บาท</div>
+																<div className="col-6 text-success fw-bold">ยอดคงเหลือ:</div>
+																<div className="col-6 text-end text-success fw-bold">{parseFloat(depositSummary.remaining_balance).toLocaleString()} บาท</div>
+															</div>
+														</div>
+													)}
+												</div>
+											</div>
+										</div>
 									)}
 								</div>
 							)}
@@ -578,13 +820,14 @@ const BillingNoteFormModal = ({
 										<label className="form-label">ชื่อบริษัท/ชื่อลูกค้า:</label>
 										<SearchableSelect
 											options={customerOptions || []}
-											value={formData.cus_name}
+											value={formData.cus_name || ""}
 											labelKey="cus_name"
 											valueKey="cus_name"
 											onChange={(val) => {
 												handleCustomerChange({ target: { value: val } });
 											}}
 											placeholder="กรุณากรอกชื่อบริษัท/ชื่อลูกค้า"
+											disabled={sourceType !== "none"}
 										/>
 									</div>
 									<div className="col-md-12 mt-2">
@@ -593,9 +836,10 @@ const BillingNoteFormModal = ({
 											type="text"
 											className="form-control"
 											name="cus_address"
-											value={formData.cus_address}
+											value={formData.cus_address || ""}
 											onChange={handleInputChange}
 											placeholder="กรุณากรองที่อยู่"
+											disabled={sourceType !== "none"}
 										/>
 									</div>
 									<div className="col-md-12 mt-2">
@@ -604,9 +848,10 @@ const BillingNoteFormModal = ({
 											type="text"
 											className="form-control"
 											name="cus_tel"
-											value={formData.cus_tel}
+											value={formData.cus_tel || ""}
 											onChange={handleInputChange}
 											placeholder="กรุณากรอกเบอร์โทรศัพท์"
+											disabled={sourceType !== "none"}
 										/>
 									</div>
 									<div className="col-md-12 mt-2">
@@ -615,9 +860,10 @@ const BillingNoteFormModal = ({
 											type="text"
 											className="form-control"
 											name="cus_tax"
-											value={formData.cus_tax}
+											value={formData.cus_tax || ""}
 											onChange={handleInputChange}
 											placeholder="กรุณากรอกเลขประจำตัวผู้เสียภาษี"
+											disabled={sourceType !== "none"}
 										/>
 									</div>
 								</div>
@@ -629,7 +875,7 @@ const BillingNoteFormModal = ({
 							<div className="mb-3">
 								<label className="form-label d-flex justify-content-between">
 									<span>รายการสินค้า</span>
-									<button type="button" className="btn btn-sm btn-primary" onClick={addProductRow}>
+									<button type="button" className="btn btn-sm btn-primary" onClick={addProductRow} disabled={sourceType !== "none"}>
 										+ เพิ่มสินค้า
 									</button>
 								</label>
@@ -657,6 +903,7 @@ const BillingNoteFormModal = ({
 																valueKey="productname"
 																onChange={(val) => handleProductChange(index, "productname", val)}
 																placeholder="เลือกสินค้า"
+																disabled={sourceType !== "none"}
 															/>
 														</td>
 														<td>
@@ -669,6 +916,7 @@ const BillingNoteFormModal = ({
 																onChange={(e) =>
 																	handleProductChange(index, "price", e.target.value)
 																}
+																disabled={sourceType !== "none"}
 															/>
 														</td>
 														<td>
@@ -680,6 +928,7 @@ const BillingNoteFormModal = ({
 																onChange={(e) =>
 																	handleProductChange(index, "sale_qty", e.target.value)
 																}
+																disabled={sourceType !== "none"}
 															/>
 														</td>
 														<td>
@@ -688,6 +937,7 @@ const BillingNoteFormModal = ({
 																className="form-control"
 																value={product.unit}
 																onChange={(e) => handleProductChange(index, "unit", e.target.value)}
+																disabled={sourceType !== "none"}
 															/>
 														</td>
 														<td className="text-end align-middle">
@@ -698,6 +948,7 @@ const BillingNoteFormModal = ({
 																type="button"
 																className="btn btn-sm btn-danger"
 																onClick={() => removeProductRow(index)}
+																disabled={sourceType !== "none"}
 															>
 																X
 															</button>
@@ -714,6 +965,7 @@ const BillingNoteFormModal = ({
 																	onChange={(e) =>
 																		handleProductChange(index, "description", e.target.value)
 																	}
+																	disabled={sourceType !== "none"}
 																></textarea>
 															</div>
 														</td>

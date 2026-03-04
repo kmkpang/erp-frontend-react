@@ -288,6 +288,13 @@ const BillingNote = () => {
 									val === "non-vat" ? "ไม่มีภาษี" : val === "included-vat" ? "รวมภาษี" : "แยกภาษี",
 							},
 							{
+								label: "ประเภทการชำระ",
+								key: "deposit_type",
+								align: "center",
+								render: (val) =>
+									val === "full" ? "เต็มจำนวน" : val === "deposit" ? "มัดจำ" : "-",
+							},
+							{
 								label: "ยอดสุทธิ",
 								key: "sale_totalprice",
 								align: "center",

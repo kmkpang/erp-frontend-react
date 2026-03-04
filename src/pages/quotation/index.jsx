@@ -247,8 +247,12 @@ const Quotation = () => {
 										return <span className="badge bg-warning">ออกใบแจ้งหนี้แล้ว</span>;
 									} else if (val === "Billed") {
 										return <span className="badge bg-success">ออกใบเสร็จแล้ว</span>;
+									} else if (val === "DepositBilled") {
+										return <span className="badge bg-warning">ออกใบเสร็จ(มัดจำ)</span>;
 									} else if (val === "Pending") {
 										return <span className="badge bg-secondary">รอทำรายการ</span>;
+									} else if (val === "Invoiced") {
+										return <span className="badge bg-warning">ออกใบแจ้งหนี้(มัดจำ)</span>;
 									} else {
 										return <span className="badge bg-secondary">{val}</span>;
 									}

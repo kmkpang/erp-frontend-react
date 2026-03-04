@@ -8,6 +8,7 @@ const SearchableSelect = ({
 	labelKey,
 	valueKey,
 	name,
+	disabled = false,
 }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [searchTerm, setSearchTerm] = useState("");
@@ -74,10 +75,11 @@ const SearchableSelect = ({
 		// Safely handle if label is undefined/null
 		return String(label || "")
 			.toLowerCase()
-			.includes(searchTerm.toLowerCase());
+			.includes((searchTerm || "").toString().toLowerCase());
 	});
 
 	const handleInputChange = (e) => {
+		if (disabled) return;
 		const newVal = e.target.value;
 		setSearchTerm(newVal);
 		setIsOpen(true);
@@ -105,10 +107,15 @@ const SearchableSelect = ({
 				placeholder={placeholder}
 				value={searchTerm}
 				onChange={handleInputChange}
-				onClick={() => setIsOpen(true)}
-				onFocus={() => setIsOpen(true)}
+				onClick={() => {
+					if (!disabled) setIsOpen(true);
+				}}
+				onFocus={() => {
+					if (!disabled) setIsOpen(true);
+				}}
 				name={name}
 				autoComplete="off"
+				disabled={disabled}
 			/>
 			{/* Dropdown Arrow Icon (Visual indicator) */}
 			<span

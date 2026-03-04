@@ -242,18 +242,27 @@ const Invoice = () => {
 								label: "อ้างอิงใบเสนอราคา",
 								key: "quotation_num",
 								align: "center",
+								render: (val) => {
+									if (val.includes("QT-AUTO")) return "-";
+									return val || "-";
+								},
 							},
 							{
 								label: "สถานะ",
-								key: "status",
+								key: "invoice_status",
 								align: "center",
-								render: (val) => {
-									if (val === "Invoiced") {
-										return <span className="badge bg-warning">รอชำระ</span>;
-									} else if (val === "Billed") {
-										return <span className="badge bg-success">ออกใบเสร็จแล้ว</span>;
+								render: (val, row) => {
+									const depositType = row?.deposit_type;
+									if (val === "Issue a receipt") {
+										return depositType === "deposit"
+											? <span className="badge bg-success">ออกใบเสร็จ(มัดจำ)</span>
+											: <span className="badge bg-success">ออกใบเสร็จแล้ว</span>;
+									} else if (val === "Pending") {
+										return depositType === "deposit"
+											? <span className="badge bg-warning">รอชำระ (มัดจำ)</span>
+											: <span className="badge bg-warning">รอชำระ</span>;
 									} else {
-										return <span className="badge bg-secondary">-</span>;
+										return <span className="badge bg-secondary">{val || "-"}</span>;
 									}
 								},
 							},

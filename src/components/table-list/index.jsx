@@ -102,11 +102,11 @@ const TableList = ({
 	const visibleColumns =
 		initialTableData.length > 0
 			? Object.keys(initialTableData[0])
-					.filter((key) => !shouldHideColumn(key))
-					.map((key) => ({
-						label: key, // Or map to a display name if needed
-						value: key,
-					}))
+				.filter((key) => !shouldHideColumn(key))
+				.map((key) => ({
+					label: key, // Or map to a display name if needed
+					value: key,
+				}))
 			: [];
 
 	const totalColspan =
@@ -228,7 +228,7 @@ const TableList = ({
 													/>
 												) : null)
 											) : header.render ? (
-												header.render(item[header.key])
+												header.render(item[header.key], item)
 											) : (
 												<span className={getStatusClass(item[header.key])}>{item[header.key]}</span>
 											)}

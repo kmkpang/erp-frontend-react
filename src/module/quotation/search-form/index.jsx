@@ -86,6 +86,7 @@ const SearchForm = ({ onSearch }) => {
 					>
 						<option value="">ทั้งหมด</option>
 						<option value="Pending">รอทำรายการ</option>
+						<option value="Invoiced">ออกใบแจ้งหนี้(มัดจำ)</option>
 						<option value="Invoice">ออกใบแจ้งหนี้แล้ว</option>
 						<option value="Billed">ออกใบเสร็จแล้ว</option>
 					</select>

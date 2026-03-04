@@ -117,16 +117,16 @@ export const generatePDF = async (
 
 		// Company Info
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(20);
+		doc.setFontSize(22);
 		doc.text(bData?.bus_name || "-", 55, 18);
 
 		if (bData?.bus_code === "00000") {
-			doc.setFontSize(12);
+			doc.setFontSize(14);
 			doc.text("(สำนักงานใหญ่)", 55, 24);
 		}
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(12);
+		doc.setFontSize(14);
 		const addressLines = doc.splitTextToSize(bData?.bus_address || "", 100);
 		doc.text(addressLines, 10, 38);
 		doc.text(`เลขประจำตัวผู้เสียภาษี  ${bData?.bus_tax || "-"}`, 10, 51);
@@ -142,12 +142,12 @@ export const generatePDF = async (
 		doc.setLineWidth(0.5);
 		doc.rect(140, 10, 60, 20);
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(16);
+		doc.setFontSize(18);
 		doc.text("ใบแจ้งหนี้", 170, 22, { align: "center" });
 
 		// Original mark
 		doc.setTextColor(255, 0, 0);
-		doc.setFontSize(16);
+		doc.setFontSize(18);
 		doc.text("ต้นฉบับ", 170, 38, { align: "center" });
 		doc.setTextColor(0, 0, 0);
 	};
@@ -167,7 +167,7 @@ export const generatePDF = async (
 		doc.rect(10, 60, 130, 45);
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(12);
+		doc.setFontSize(14);
 		doc.text("ชื่อลูกค้า / Customer:", 12, 65);
 		doc.text("ที่อยู่ / Address:", 12, 75);
 		doc.text("เบอร์โทรศัพท์", 12, 85);
@@ -201,6 +201,11 @@ export const generatePDF = async (
 		let p = parseFloat(row.total_grand || row.total_price || row.sale_totalprice || 0);
 		if (p === 0 && products && products.length > 0) {
 			p = products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
+		}
+		// If this is a full invoice but there were prior deposits, subtract them
+		const totalDeposited = parseFloat(row.total_deposited) || 0;
+		if (row.deposit_type !== "deposit" && totalDeposited > 0) {
+			return p - totalDeposited;
 		}
 		return p;
 	};
@@ -245,7 +250,7 @@ export const generatePDF = async (
 		// Total
 		doc.rect(summaryX, finalY, summaryW, 10);
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(12);
+		doc.setFontSize(14);
 		doc.text("รวมเงิน", summaryX + 2, finalY + 4);
 		doc.text("TOTAL", summaryX + 2, finalY + 8);
 		doc.text(
@@ -276,7 +281,7 @@ export const generatePDF = async (
 			doc.setFont("THSarabunNew", "normal");
 			doc.text("ยอดเงินสุทธิ", summaryX + 2, netY + 6);
 			doc.text("NET AMOUNT", summaryX + 2, netY + 12);
-			doc.setFontSize(12);
+			doc.setFontSize(16);
 			doc.text(
 				netAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 				198,
@@ -294,7 +299,7 @@ export const generatePDF = async (
 
 		// Text Amount Box
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(13);
+		doc.setFontSize(14);
 
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
 		doc.rect(40, netY + 7, 95, 10);
@@ -317,7 +322,7 @@ export const generatePDF = async (
 		doc.line(135, sigY, 135, sigY + 30);
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(11);
+		doc.setFontSize(14);
 		doc.text("ลูกค้า/ผู้รับสินค้า/ใบแจ้งหนี้", 41, sigY + 5, { align: "center" });
 		doc.text("ผู้แจ้งหนี้", 103, sigY + 5, { align: "center" });
 
@@ -389,8 +394,9 @@ export const generatePDF = async (
 			]
 		];
 	} else {
+		const totalDeposited = parseFloat(row.total_deposited) || 0;
+
 		tableData = products.map((item, index) => {
-			// Find product in master list if name is missing
 			const productDef = productQuery?.find(
 				(p) => p.productID === item.productID || p.productname === item.productID
 			);
@@ -410,6 +416,18 @@ export const generatePDF = async (
 				parseFloat(item.sale_price).toLocaleString("en-US", { minimumFractionDigits: 2 }),
 			];
 		});
+
+		// If prior deposit invoices exist, add a deduction row
+		if (totalDeposited > 0) {
+			let depositRefText = "หักค่ามัดจำ";
+			tableData.push([
+				"",
+				depositRefText,
+				"",
+				"",
+				`-${totalDeposited.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+			]);
+		}
 	}
 
 	autoTable(doc, {

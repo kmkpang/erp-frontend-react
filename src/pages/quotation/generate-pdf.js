@@ -117,16 +117,16 @@ export const generatePDF = async (
 
 		// Company Info
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(20);
+		doc.setFontSize(22);
 		doc.text(bData?.bus_name || "-", 55, 18);
 
 		if (bData?.bus_code === "00000") {
-			doc.setFontSize(12);
+			doc.setFontSize(14);
 			doc.text("(สำนักงานใหญ่)", 55, 24);
 		}
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(12);
+		doc.setFontSize(14);
 		const addressLines = doc.splitTextToSize(bData?.bus_address || "", 100);
 		doc.text(addressLines, 10, 38);
 		doc.text(`เลขประจำตัวผู้เสียภาษี  ${bData?.bus_tax || "-"}`, 10, 51);
@@ -142,8 +142,8 @@ export const generatePDF = async (
 		doc.setLineWidth(0.5);
 		doc.rect(140, 10, 60, 20);
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(16);
-		doc.text("ใบเสนอราคา", 170, 20, { align: "center" });
+		doc.setFontSize(18);
+		doc.text("ใบเสนอราคา", 170, 22, { align: "center" });
 		doc.setFontSize(10);
 	};
 
@@ -151,31 +151,32 @@ export const generatePDF = async (
 	const renderSectionBoxes = () => {
 		// Customer Box
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
-		doc.rect(10, 60, 130, 35);
+		doc.rect(10, 60, 130, 45);
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(12);
+		doc.setFontSize(14);
 		doc.text("ชื่อลูกค้า / Customer:", 12, 65);
 		doc.text("ที่อยู่ / Address:", 12, 75);
 		doc.text("เบอร์โทรศัพท์", 12, 85);
-		doc.text("เลขประจำตัวผู้เสียภาษี", 12, 90);
+		doc.text("เลขประจำตัวผู้เสียภาษี", 12, 95);
 
 		doc.setFont("THSarabunNew", "normal");
 		doc.text(row.cus_name || "-", 45, 65);
-		const cusAddressLines = doc.splitTextToSize(row.cus_address || "-", 90);
+		const cusAddressLines = doc.splitTextToSize(row.cus_address || "-", 98);
 		doc.text(cusAddressLines, 45, 75);
 		doc.text(formatPhoneNumber(row.cus_tel) || "-", 45, 85);
-		doc.text(row.cus_tax || "-", 45, 90);
+		doc.text(row.cus_tax || "-", 45, 95);
 
 		// Billing Info Box
-		doc.rect(142, 60, 58, 35);
+		doc.rect(142, 60, 58, 45);
 		doc.setFont("THSarabunNew", "normal");
-		doc.text("เลขที่ / No.", 145, 78);
-		doc.text("วันที่ / Date", 145, 88);
+		doc.setFontSize(14);
+		doc.text("เลขที่ / No.", 145, 75);
+		doc.text("วันที่ / Date", 145, 85);
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.text(docNumber, 170, 78);
-		doc.text(displayDate, 170, 88);
+		doc.text(docNumber, 170, 75);
+		doc.text(displayDate, 170, 85);
 	};
 
 	// Calculations for footer
@@ -227,7 +228,7 @@ export const generatePDF = async (
 		// Total
 		doc.rect(summaryX, finalY, summaryW, 10);
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(12);
+		doc.setFontSize(14);
 		doc.text("รวมเงิน", summaryX + 2, finalY + 4);
 		doc.text("TOTAL", summaryX + 2, finalY + 8);
 		doc.text(
@@ -258,11 +259,11 @@ export const generatePDF = async (
 			doc.setFont("THSarabunNew", "normal");
 			doc.text("ยอดเงินสุทธิ", summaryX + 2, netY + 6);
 			doc.text("NET AMOUNT", summaryX + 2, netY + 12);
-			doc.setFontSize(12);
+			doc.setFontSize(16);
 			doc.text(
 				netAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 				198,
-				netY + 8,
+				netY + 10,
 				{ align: "right" }
 			);
 		}
@@ -276,14 +277,14 @@ export const generatePDF = async (
 
 		// Text Amount Box
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(13);
+		doc.setFontSize(14);
 		doc.setTextColor(0, 0, 0);
 
 		doc.setDrawColor(orangeColor[0], orangeColor[1], orangeColor[2]);
 		doc.rect(40, netY + 7, 95, 10);
 		doc.text("ตัวอักษร", 10, netY + 13);
 		doc.setTextColor(blueColor[0], blueColor[1], blueColor[2]);
-		doc.text(`( ${toThaiBaht(netAmount)} )`, 87.5, netY + 13, { align: "center" });
+		doc.text(`( ${toThaiBaht(netAmount)} )`, 87.5, netY + 14, { align: "center" });
 		doc.setTextColor(0, 0, 0);
 
 		// Signatures
@@ -300,7 +301,7 @@ export const generatePDF = async (
 		doc.line(135, sigY, 135, sigY + 30);
 
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(11);
+		doc.setFontSize(14);
 		doc.text("ลูกค้า/ผู้รับสินค้า", 41, sigY + 5, { align: "center" });
 		doc.text("ผู้เสนอ", 103, sigY + 5, { align: "center" });
 
@@ -379,13 +380,13 @@ export const generatePDF = async (
 	});
 
 	autoTable(doc, {
-		startY: 100,
+		startY: 110,
 		head: [["ลำดับที่", "รายการ", "จำนวน", "ราคา/หน่วย", "จำนวนเงิน"]],
 		body: tableData,
 		theme: "grid",
 		styles: {
 			font: "THSarabunNew",
-			fontSize: 11,
+			fontSize: 14,
 			cellPadding: 2,
 			halign: "center",
 			valign: "middle",
@@ -405,7 +406,7 @@ export const generatePDF = async (
 			3: { cellWidth: 28, halign: "right" },
 			4: { cellWidth: 30, halign: "right" },
 		},
-		margin: { top: 100, left: 10, right: 10, bottom: 20 },
+		margin: { top: 110, left: 10, right: 10, bottom: 20 },
 		didDrawPage: function () {
 			renderHeader();
 			renderSectionBoxes();
