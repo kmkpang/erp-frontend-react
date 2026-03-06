@@ -405,6 +405,9 @@ const BillingNoteFormModal = ({
 			success("แก้ไขข้อมูลสำเร็จ");
 			if (onSaveSuccess) {
 				const mergedData = { ...formData, ...(data?.data || {}) };
+				// ใช้ billing_number จาก formData เสมอ เพราะ backend อาจส่ง field 'billing' เก่ากลับมา
+				mergedData.billing_number = formData.billing_number;
+				mergedData.billing = formData.billing_number;
 				onSaveSuccess(mergedData);
 			}
 		},
