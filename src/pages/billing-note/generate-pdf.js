@@ -204,9 +204,14 @@ export const generatePDF = async (
 		if (row.deposit_type === "deposit" && parseFloat(row.deposit_amount) > 0) {
 			return parseFloat(row.deposit_amount);
 		}
-		let p = parseFloat(row.sale_totalprice || row.total_price || row.total_grand || 0);
-		if (p === 0 && products && products.length > 0) {
+		// คำนวณจาก products โดยตรงก่อน (เหมือนฟอร์ม) เพื่อป้องกันความคลาดเคลื่อนจาก sale_totalprice ใน DB
+		let p = 0;
+		if (products && products.length > 0) {
 			p = products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
+		}
+		// Fallback ไป sale_totalprice ถ้า products ไม่มีข้อมูล
+		if (p === 0) {
+			p = parseFloat(row.sale_totalprice || row.total_price || row.total_grand || 0);
 		}
 		// If this is a full billing but there were prior deposits, subtract them
 		const totalDeposited = parseFloat(row.total_deposited) || 0;
@@ -223,16 +228,20 @@ export const generatePDF = async (
 
 	const isIncludedVat = row.vatType === "included-vat";
 
+	// ใช้ grand_total ที่คำนวณและเก็บไว้แล้วจากฟอร์ม (ถ้ามี) เพื่อป้องกันความคลาดเคลื่อนของทศนิยม
+	const storedGrandTotal = parseFloat(row.grand_total) || 0;
+	const storedVat = parseFloat(row.vat) || 0;
+
 	if (row.vatType === "included-vat") {
 		// Price includes VAT: show ex-VAT as subtotal
-		vatAmount = (price * 7) / 107;
+		vatAmount = storedVat > 0 ? storedVat : (price * 7) / 107;
 		finalTotal = price - vatAmount; // ex-VAT total
-		netAmount = price; // full amount (customer pays this)
+		netAmount = storedGrandTotal > 0 ? storedGrandTotal : price; // full amount (customer pays this)
 	} else if (row.vatType === "excluded-vat") {
 		// Price excludes VAT
 		finalTotal = price;
-		vatAmount = price * 0.07;
-		netAmount = price + vatAmount;
+		vatAmount = storedVat > 0 ? storedVat : price * 0.07;
+		netAmount = storedGrandTotal > 0 ? storedGrandTotal : price + vatAmount;
 	}
 
 	const renderFooter = (lastY) => {
