@@ -517,7 +517,7 @@ const QuotationFormModal = ({
 																type="number"
 																className="form-control"
 																min="0"
-																step="0.01"
+																step="any"
 																value={product.price}
 																onChange={(e) =>
 																	handleProductChange(index, "price", e.target.value)
