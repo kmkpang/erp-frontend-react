@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import SearchableSelect from "@component/searchable-select";
 import DatePickerThai from "@component/date-picker-thai";
@@ -113,9 +113,9 @@ const InvoiceFormModal = ({
           productID: p.productID,
           unit: p.unit || p.pro_unti || "",
           sale_qty: p.sale_qty || 1,
-          price: p.price || 0,
+          price: parseFloat(p.price || p.sale_price / (p.sale_qty || 1)) || 0,
           description: p.description || p.product_detail || "",
-          sale_price: p.sale_price || 0,
+          sale_price: parseFloat(p.sale_price) || (parseFloat(p.price || 0) * (p.sale_qty || 1)),
         })),
         inv_date: initialData.invoice_date ? initialData.invoice_date.slice(0, 10) : "",
         inv_num: initialData.invoice_number || "HD",
@@ -133,6 +133,33 @@ const InvoiceFormModal = ({
     }
     return getInitialFormState();
   });
+
+  // Recalculate totals on initial load to ensure VAT and Grand Total are derived correctly
+  useEffect(() => {
+    if (isEditMode && initialData) {
+      const products = formData.productForms || [];
+      const vatType = formData.vatType || "non-vat";
+
+      const total = products.reduce((sum, p) => sum + (parseFloat(p.sale_price) || 0), 0);
+      let vatAmt = 0;
+      let gTotal = total;
+
+      if (vatType === "included-vat") {
+        vatAmt = (total * 7) / 107;
+      } else if (vatType === "excluded-vat") {
+        vatAmt = total * 0.07;
+        gTotal = total + vatAmt;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        vat: vatAmt,
+        grand_total: gTotal,
+        total_grand: total
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, initialData]);
 
   const isDerivedFromQuotation = !!formData.sale_id && (!formData.quotation_num || !String(formData.quotation_num).includes("QT-AUTO"));
 

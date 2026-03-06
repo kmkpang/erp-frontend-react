@@ -131,9 +131,12 @@ export const generatePDF = async (
 		doc.setLineWidth(0.5);
 		doc.rect(140, 10, 60, 20);
 		doc.setFont("THSarabunNew", "normal");
-		doc.setFontSize(18);
-
 		const titleText = row.doc_title || "ใบเสร็จรับเงิน/ใบกำกับภาษี";
+		if (titleText === "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ") {
+			doc.setFontSize(16);
+		} else {
+			doc.setFontSize(18);
+		}
 		doc.text(titleText, 170, 22, { align: "center" });
 
 		// Original mark

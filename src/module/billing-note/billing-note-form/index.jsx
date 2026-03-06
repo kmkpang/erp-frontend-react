@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import SearchableSelect from "@component/searchable-select";
 import DatePickerThai from "@component/date-picker-thai";
@@ -159,10 +159,38 @@ const BillingNoteFormModal = ({
 				vat: vat,
 				total_price: initialData.sale_totalprice || initialData.total_price || 0,
 				doc_title: requireCustomer ? "ใบเสร็จรับเงิน/ใบกำกับภาษี" : "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ",
+				billing_number: initialData.billing || "HD",
 			};
 		}
 		return getInitialFormState(requireCustomer);
 	});
+
+	// Recalculate totals on initial load to ensure VAT and Grand Total are derived correctly
+	useEffect(() => {
+		if (isEditMode && initialData) {
+			const products = formData.productForms || [];
+			const vatType = formData.vatType || "non-vat";
+
+			const total = products.reduce((sum, p) => sum + (parseFloat(p.sale_price) || 0), 0);
+			let vatAmt = 0;
+			let gTotal = total;
+
+			if (vatType === "included-vat") {
+				vatAmt = (total * 7) / 107;
+			} else if (vatType === "excluded-vat") {
+				vatAmt = total * 0.07;
+				gTotal = total + vatAmt;
+			}
+
+			setFormData((prev) => ({
+				...prev,
+				vat: vatAmt,
+				grand_total: gTotal,
+				total_price: total
+			}));
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isEditMode, initialData]);
 
 	// Remove hasCustomer state
 
