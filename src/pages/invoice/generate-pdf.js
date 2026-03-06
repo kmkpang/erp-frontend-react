@@ -217,11 +217,13 @@ export const generatePDF = async (
 	let vatAmount = 0;
 	let netAmount = price;
 
+	const isIncludedVat = row.vatType === "included-vat";
+
 	if (row.vatType === "included-vat") {
-		// Price includes VAT
-		netAmount = price;
+		// Price includes VAT: show ex-VAT as subtotal
 		vatAmount = (price * 7) / 107;
-		finalTotal = price;
+		finalTotal = price - vatAmount; // ex-VAT total
+		netAmount = price; // full amount (customer pays this)
 	} else if (row.vatType === "excluded-vat") {
 		// Price excludes VAT
 		finalTotal = price;
@@ -261,41 +263,31 @@ export const generatePDF = async (
 		);
 
 		// VAT
-		const isIncludedVat = row.vatType === "included-vat";
-		const netY = isIncludedVat ? finalY + 10 : finalY + 20;
+		const netY = finalY + 20;
 
-		if (!isIncludedVat) {
-			doc.rect(summaryX, finalY + 10, summaryW, 10);
-			doc.text("VAT", summaryX + 2, finalY + 14);
-			doc.text("7%", summaryX + 2, finalY + 18);
-			const vatDisplay =
-				row.vatType === "non-vat"
-					? ""
-					: vatAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-			doc.text(vatDisplay, summaryX + summaryW - 2, finalY + 17, { align: "right" });
-			// Net Amount
-			doc.setFillColor(255, 235, 204);
-			doc.rect(summaryX, netY, 30, 15, "F"); // Label bg
-			doc.rect(summaryX, netY, summaryW, 15); // Outline
+		doc.rect(summaryX, finalY + 10, summaryW, 10);
+		doc.text("VAT", summaryX + 2, finalY + 14);
+		doc.text("7%", summaryX + 2, finalY + 18);
+		const vatDisplay =
+			row.vatType === "non-vat"
+				? ""
+				: vatAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+		doc.text(vatDisplay, summaryX + summaryW - 2, finalY + 17, { align: "right" });
+		// Net Amount
+		doc.setFillColor(255, 235, 204);
+		doc.rect(summaryX, netY, 30, 15, "F"); // Label bg
+		doc.rect(summaryX, netY, summaryW, 15); // Outline
 
-			doc.setFont("THSarabunNew", "normal");
-			doc.text("ยอดเงินสุทธิ", summaryX + 2, netY + 6);
-			doc.text("NET AMOUNT", summaryX + 2, netY + 12);
-			doc.setFontSize(16);
-			doc.text(
-				netAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-				198,
-				netY + 8,
-				{ align: "right" }
-			);
-		}
-
-
-		if (isIncludedVat) {
-			doc.setFontSize(12);
-			doc.setTextColor(255, 0, 0);
-			doc.text("**ราคานี้รวมภาษีมูลค่าเพิ่มแล้ว", summaryX, netY + 5, { align: "left" });
-		}
+		doc.setFont("THSarabunNew", "normal");
+		doc.text("ยอดเงินสุทธิ", summaryX + 2, netY + 6);
+		doc.text("NET AMOUNT", summaryX + 2, netY + 12);
+		doc.setFontSize(16);
+		doc.text(
+			netAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+			198,
+			netY + 8,
+			{ align: "right" }
+		);
 
 		// Text Amount Box
 		doc.setFont("THSarabunNew", "normal");
@@ -401,9 +393,16 @@ export const generatePDF = async (
 				(p) => p.productID === item.productID || p.productname === item.productID
 			);
 			const productName = item.productName || item.productname || productDef?.productname || "";
-			const unitPrice = parseFloat(
-				item.price || productDef?.price || item.sale_price / item.sale_qty || 0
-			);
+			const salePrice = parseFloat(item.sale_price) || 0;
+			const qty = parseFloat(item.sale_qty) || 1;
+
+			let unitPrice;
+			if (isIncludedVat) {
+				unitPrice = (salePrice / qty) / 1.07;
+			} else {
+				unitPrice = parseFloat(item.price || productDef?.price || salePrice / qty || 0);
+			}
+			const lineTotal = isIncludedVat ? unitPrice * qty : salePrice;
 
 			return [
 				index + 1,
@@ -411,22 +410,16 @@ export const generatePDF = async (
 				(item.description || item.product_detail
 					? "\n" + (item.description || item.product_detail)
 					: ""),
-				parseFloat(item.sale_qty).toLocaleString(),
+				qty.toLocaleString(),
 				unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2 }),
-				parseFloat(item.sale_price).toLocaleString("en-US", { minimumFractionDigits: 2 }),
+				lineTotal.toLocaleString("en-US", { minimumFractionDigits: 2 }),
 			];
 		});
 
 		// If prior deposit invoices exist, add a deduction row
 		if (totalDeposited > 0) {
-			let depositRefText = "หักค่ามัดจำ";
-			tableData.push([
-				"",
-				depositRefText,
-				"",
-				"",
-				`-${totalDeposited.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
-			]);
+			const depositRefText = "หักค่ามัดจำ";
+			tableData.push(["", depositRefText, "", "", `-${totalDeposited.toLocaleString("en-US", { minimumFractionDigits: 2 })}`]);
 		}
 	}
 
@@ -448,14 +441,14 @@ export const generatePDF = async (
 			lineWidth: 0.1,
 			halign: "center",
 			font: "THSarabunNew",
-			fontStyle: "normal", // Explicitly set to normal as we only have normal weight
+			fontStyle: "normal",
 		},
 		columnStyles: {
 			0: { cellWidth: 15 },
 			1: { cellWidth: 95, halign: "left" },
 			2: { cellWidth: 20 },
 			3: { cellWidth: 28, halign: "right" },
-			4: { cellWidth: 30, halign: "right" },
+			4: { cellWidth: 32, halign: "right" },
 		},
 		margin: { top: 110, left: 10, right: 10, bottom: 20 },
 		didDrawPage: function () {

@@ -6,7 +6,7 @@ import { config } from "@constant";
 import { useAlert } from "@component/alert/alert-context";
 import { fetchApi } from "@utils/api";
 
-const getInitialFormState = () => ({
+const getInitialFormState = (requireCustomer) => ({
 	billing_number: "HD",
 	billing_date: new Date().toISOString().slice(0, 10),
 	cus_id: "",
@@ -34,6 +34,7 @@ const getInitialFormState = () => ({
 	deposit_type: "full", // "full" or "deposit"
 	deposit_amount: "",
 	deposit_percent: "",
+	doc_title: requireCustomer ? "ใบเสร็จรับเงิน/ใบกำกับภาษี" : "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ",
 });
 
 const BillingNoteFormModal = ({
@@ -157,9 +158,10 @@ const BillingNoteFormModal = ({
 				grand_total: grandTotal || 0,
 				vat: vat,
 				total_price: initialData.sale_totalprice || initialData.total_price || 0,
+				doc_title: requireCustomer ? "ใบเสร็จรับเงิน/ใบกำกับภาษี" : "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ",
 			};
 		}
-		return getInitialFormState();
+		return getInitialFormState(requireCustomer);
 	});
 
 	// Remove hasCustomer state
@@ -178,6 +180,8 @@ const BillingNoteFormModal = ({
 		newData.cus_tax = item.cus_tax;
 		newData.vatType = item.vatType || "non-vat";
 		newData.quotation_num = item.quotation_num || item.sale_number || "";
+		// Set doc_title based on customer presence
+		newData.doc_title = item.cus_id ? "ใบเสร็จรับเงิน/ใบกำกับภาษี" : "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ";
 		newData.invoice_number = item.invoice_number || "";
 
 		const productsRaw = item.products || item.details || item.quotation_sale_details || [];
@@ -292,6 +296,7 @@ const BillingNoteFormModal = ({
 				sale_id: newData.sale_id || null,
 				deposit_type: newData.deposit_type || "full",
 				deposit_amount: newData.deposit_type === "deposit" ? parseFloat(newData.deposit_amount) || null : null,
+				doc_title: newData.doc_title || requireCustomer ? "ใบเสร็จรับเงิน/ใบกำกับภาษี" : "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ",
 			};
 
 			const res = await fetchApi(`${config.url}/Billing/createBilling`, {
@@ -786,6 +791,18 @@ const BillingNoteFormModal = ({
 							{/* Header Info */}
 							<div className="row mb-3">
 								<div className="col-md-12">
+									<label className="form-label">ชื่อเอกสาร</label>
+									<input
+										type="text"
+										className="form-control"
+										name="doc_title"
+										value={formData.doc_title || ""}
+										onChange={handleInputChange}
+										placeholder="ใบเสร็จรับเงิน/ใบกำกับภาษี"
+										required
+									/>
+								</div>
+								<div className="col-md-12 mt-2">
 									<label className="form-label">เลขที่ใบเสร็จ:</label>
 									<input
 										type="text"
