@@ -375,8 +375,8 @@ export const generatePDF = async (
 				? "\n" + (item.description || item.product_detail)
 				: ""),
 			qty.toLocaleString(),
-			unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2 }),
-			lineTotal.toLocaleString("en-US", { minimumFractionDigits: 2 }),
+			unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+			lineTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 		];
 	});
 

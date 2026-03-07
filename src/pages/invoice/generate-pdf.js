@@ -370,10 +370,10 @@ export const generatePDF = async (
 				(p) => p.productID === item.productID || p.productname === item.productname
 			);
 			const pName = item.productName || item.productname || productDef?.productname || "";
-			const pPrice = parseFloat(item.sale_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2 });
+			const pPrice = parseFloat(item.sale_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 			description += `\n${pName}                                ${pPrice}`;
 		});
-		description += `\n\nรวมราคาตามใบเสนอราคา                 ${origTotal.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+		description += `\n\nรวมราคาตามใบเสนอราคา                 ${origTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 		description += refText;
 
 		tableData = [
@@ -381,8 +381,8 @@ export const generatePDF = async (
 				1,
 				description,
 				"1",
-				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2 }),
-				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2 }),
+				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 			]
 		];
 	} else {
@@ -411,15 +411,15 @@ export const generatePDF = async (
 					? "\n" + (item.description || item.product_detail)
 					: ""),
 				qty.toLocaleString(),
-				unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2 }),
-				lineTotal.toLocaleString("en-US", { minimumFractionDigits: 2 }),
+				unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+				lineTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 			];
 		});
 
 		// If prior deposit invoices exist, add a deduction row
 		if (totalDeposited > 0) {
 			const depositRefText = "หักค่ามัดจำ";
-			tableData.push(["", depositRefText, "", "", `-${totalDeposited.toLocaleString("en-US", { minimumFractionDigits: 2 })}`]);
+			tableData.push(["", depositRefText, "", "", `-${totalDeposited.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]);
 		}
 	}
 
