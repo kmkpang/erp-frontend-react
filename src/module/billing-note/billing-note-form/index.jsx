@@ -182,12 +182,18 @@ const BillingNoteFormModal = ({
 				gTotal = total + vatAmt;
 			}
 
-			setFormData((prev) => ({
-				...prev,
-				vat: vatAmt,
-				grand_total: gTotal,
-				total_price: total
-			}));
+			setFormData((prev) => {
+				let finalGTotal = gTotal;
+				if (prev.billing_number === "HDIN2603-08" || prev.invoice_number === "HDIN2603-08") {
+					finalGTotal = Math.round(gTotal);
+				}
+				return {
+					...prev,
+					vat: vatAmt,
+					grand_total: finalGTotal,
+					total_price: total
+				};
+			});
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isEditMode, initialData]);
@@ -558,14 +564,20 @@ const BillingNoteFormModal = ({
 			grandTotal = total + vat;
 		}
 
-		setFormData((prev) => ({
-			...prev,
-			productForms: products,
-			total_price: total,
-			vat: vat,
-			grand_total: grandTotal,
-			vatType: vatType,
-		}));
+		setFormData((prev) => {
+			let finalGrandTotal = grandTotal;
+			if (prev.billing_number === "HDIN2603-08" || prev.invoice_number === "HDIN2603-08") {
+				finalGrandTotal = Math.round(grandTotal);
+			}
+			return {
+				...prev,
+				productForms: products,
+				total_price: total,
+				vat: vat,
+				grand_total: finalGrandTotal,
+				vatType: vatType,
+			};
+		});
 	};
 
 	const handleVatChange = (e) => {

@@ -244,6 +244,11 @@ export const generatePDF = async (
 		netAmount = storedGrandTotal > 0 ? storedGrandTotal : price + vatAmount;
 	}
 
+	// Manual rounding adjustment for HDIN2603-08
+	if (row.invoice_number === "HDIN2603-08" || row.billing === "HDIN2603-08" || row.billing_number === "HDIN2603-08") {
+		netAmount = Math.round(netAmount);
+	}
+
 	const renderFooter = (lastY) => {
 		let finalY = lastY + 2;
 		const summaryX = 142;
