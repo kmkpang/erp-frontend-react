@@ -90,7 +90,7 @@ export const generatePDF = async (
 
 	// Date Formatting
 	// Prefer inv_date, fallback to billing_date
-	const dateStr = row.quotation_start_date || row.inv_date || row.billing_date;
+	const dateStr = row.inv_date || row.invoice_date;
 	let billingDate = new Date();
 	if (dateStr) {
 		billingDate = new Date(dateStr);
@@ -132,9 +132,7 @@ export const generatePDF = async (
 		doc.text(`เลขประจำตัวผู้เสียภาษี  ${bData?.bus_tax || "-"}`, 10, 51);
 
 		const tel = formatPhoneNumber(bData?.bus_tel) || "-";
-		const email = bData?.bus_email
-			? `      E-mail : ${bData.bus_email}`
-			: "";
+		const email = bData?.bus_email ? `      E-mail : ${bData.bus_email}` : "";
 		doc.text(`โทร  ${tel}${email}`, 10, 56);
 
 		// Title Box
@@ -354,7 +352,9 @@ export const generatePDF = async (
 	let tableData = [];
 
 	if (row.deposit_type === "deposit") {
-		const origTotal = parseFloat(row.total_grand || row.total_price || row.sale_totalprice || 0) || products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
+		const origTotal =
+			parseFloat(row.total_grand || row.total_price || row.sale_totalprice || 0) ||
+			products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
 		const depositAmt = parseFloat(row.deposit_amount) || 0;
 		const pct = origTotal > 0 ? Math.round((depositAmt / origTotal) * 100) : 0;
 
@@ -365,12 +365,15 @@ export const generatePDF = async (
 
 		let description = `มัดจำค่าติดตั้งป้าย ${pct}% ก่อนเริ่มงาน`;
 
-		products.forEach(item => {
+		products.forEach((item) => {
 			const productDef = productQuery?.find(
 				(p) => p.productID === item.productID || p.productname === item.productname
 			);
 			const pName = item.productName || item.productname || productDef?.productname || "";
-			const pPrice = parseFloat(item.sale_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+			const pPrice = parseFloat(item.sale_price || 0).toLocaleString("en-US", {
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2,
+			});
 			description += `\n${pName}                                ${pPrice}`;
 		});
 		description += `\n\nรวมราคาตามใบเสนอราคา                 ${origTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -383,7 +386,7 @@ export const generatePDF = async (
 				"1",
 				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-			]
+			],
 		];
 	} else {
 		const totalDeposited = parseFloat(row.total_deposited) || 0;
@@ -398,7 +401,7 @@ export const generatePDF = async (
 
 			let unitPrice;
 			if (isIncludedVat) {
-				unitPrice = (salePrice / qty) / 1.07;
+				unitPrice = salePrice / qty / 1.07;
 			} else {
 				unitPrice = parseFloat(item.price || productDef?.price || salePrice / qty || 0);
 			}
@@ -407,9 +410,9 @@ export const generatePDF = async (
 			return [
 				index + 1,
 				productName +
-				(item.description || item.product_detail
-					? "\n" + (item.description || item.product_detail)
-					: ""),
+					(item.description || item.product_detail
+						? "\n" + (item.description || item.product_detail)
+						: ""),
 				qty.toLocaleString(),
 				unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 				lineTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
@@ -419,7 +422,13 @@ export const generatePDF = async (
 		// If prior deposit invoices exist, add a deduction row
 		if (totalDeposited > 0) {
 			const depositRefText = "หักค่ามัดจำ";
-			tableData.push(["", depositRefText, "", "", `-${totalDeposited.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]);
+			tableData.push([
+				"",
+				depositRefText,
+				"",
+				"",
+				`-${totalDeposited.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+			]);
 		}
 	}
 

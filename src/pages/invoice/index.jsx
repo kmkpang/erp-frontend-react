@@ -239,6 +239,12 @@ const Invoice = () => {
 								render: (val) => `${parseFloat(val).toLocaleString()} บาท`,
 							},
 							{
+								label: "ยอดมัดจำ",
+								key: "deposit_amount",
+								align: "center",
+								render: (val) => (val ? `${parseFloat(val).toLocaleString()} บาท` : "-"),
+							},
+							{
 								label: "อ้างอิงใบเสนอราคา",
 								key: "quotation_num",
 								align: "center",
@@ -254,13 +260,17 @@ const Invoice = () => {
 								render: (val, row) => {
 									const depositType = row?.deposit_type;
 									if (val === "Issue a receipt") {
-										return depositType === "deposit"
-											? <span className="badge bg-success">ออกใบเสร็จ(มัดจำ)</span>
-											: <span className="badge bg-success">ออกใบเสร็จแล้ว</span>;
+										return depositType === "deposit" ? (
+											<span className="badge bg-success">ออกใบเสร็จ(มัดจำ)</span>
+										) : (
+											<span className="badge bg-success">ออกใบเสร็จแล้ว</span>
+										);
 									} else if (val === "Pending") {
-										return depositType === "deposit"
-											? <span className="badge bg-warning">รอชำระ (มัดจำ)</span>
-											: <span className="badge bg-warning">รอชำระ</span>;
+										return depositType === "deposit" ? (
+											<span className="badge bg-warning">รอชำระ (มัดจำ)</span>
+										) : (
+											<span className="badge bg-warning">รอชำระ</span>
+										);
 									} else {
 										return <span className="badge bg-secondary">{val || "-"}</span>;
 									}
