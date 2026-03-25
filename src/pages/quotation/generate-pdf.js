@@ -156,16 +156,22 @@ export const generatePDF = async (
 		doc.setFont("THSarabunNew", "normal");
 		doc.setFontSize(14);
 		doc.text("ชื่อลูกค้า / Customer:", 12, 65);
-		doc.text("ที่อยู่ / Address:", 12, 75);
-		doc.text("เบอร์โทรศัพท์", 12, 85);
-		doc.text("เลขประจำตัวผู้เสียภาษี", 12, 95);
-
-		doc.setFont("THSarabunNew", "normal");
 		doc.text(row.cus_name || "-", 45, 65);
+
+		const addressY = 72; // Closer to customer (was 75)
+		doc.text("ที่อยู่ / Address:", 12, addressY);
 		const cusAddressLines = doc.splitTextToSize(row.cus_address || "-", 98);
-		doc.text(cusAddressLines, 45, 75);
-		doc.text(formatPhoneNumber(row.cus_tel) || "-", 45, 85);
-		doc.text(row.cus_tax || "-", 45, 95);
+		doc.text(cusAddressLines, 45, addressY);
+
+		// Calculate dynamic spacing if address has > 1 line
+		const addressHeight = (cusAddressLines.length - 1) * 5;
+		const phoneY = 82 + addressHeight; // Was 85
+		doc.text("เบอร์โทรศัพท์", 12, phoneY);
+		doc.text(formatPhoneNumber(row.cus_tel) || "-", 45, phoneY);
+
+		const taxY = phoneY + 9; // Was 95 (constant 10 jump)
+		doc.text("เลขประจำตัวผู้เสียภาษี", 12, taxY);
+		doc.text(row.cus_tax || "-", 45, taxY);
 
 		// Billing Info Box
 		doc.rect(142, 60, 58, 45);
