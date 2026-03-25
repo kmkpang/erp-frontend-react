@@ -85,7 +85,9 @@ const BillingNoteFormModal = ({
 
 	const pendingQuotations = React.useMemo(() => {
 		if (!quotations) return [];
-		return quotations.filter((q) => q.status !== "Billed" && q.status !== "Cancel" && q.status !== "Invoiced");
+		return quotations.filter(
+			(q) => q.status !== "Billed" && q.status !== "Cancel" && q.status !== "Invoiced"
+		);
 		// "DepositBilled" is allowed so a full receipt can be issued after deposit
 	}, [quotations]);
 
@@ -158,7 +160,9 @@ const BillingNoteFormModal = ({
 				grand_total: grandTotal || 0,
 				vat: vat,
 				total_price: initialData.sale_totalprice || initialData.total_price || 0,
-				doc_title: requireCustomer ? "ใบเสร็จรับเงิน/ใบกำกับภาษี" : "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ",
+				doc_title: requireCustomer
+					? "ใบเสร็จรับเงิน/ใบกำกับภาษี"
+					: "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ",
 				billing_number: initialData.billing || "HD",
 			};
 		}
@@ -191,7 +195,7 @@ const BillingNoteFormModal = ({
 					...prev,
 					vat: vatAmt,
 					grand_total: finalGTotal,
-					total_price: total
+					total_price: total,
 				};
 			});
 		}
@@ -215,7 +219,9 @@ const BillingNoteFormModal = ({
 		newData.vatType = item.vatType || "non-vat";
 		newData.quotation_num = item.quotation_num || item.sale_number || "";
 		// Set doc_title based on customer presence
-		newData.doc_title = item.cus_id ? "ใบเสร็จรับเงิน/ใบกำกับภาษี" : "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ";
+		newData.doc_title = item.cus_id
+			? "ใบเสร็จรับเงิน/ใบกำกับภาษี"
+			: "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ";
 		newData.invoice_number = item.invoice_number || "";
 
 		const productsRaw = item.products || item.details || item.quotation_sale_details || [];
@@ -329,8 +335,12 @@ const BillingNoteFormModal = ({
 				invoice_id: newData.invoice_id || null,
 				sale_id: newData.sale_id || null,
 				deposit_type: newData.deposit_type || "full",
-				deposit_amount: newData.deposit_type === "deposit" ? parseFloat(newData.deposit_amount) || null : null,
-				doc_title: newData.doc_title || requireCustomer ? "ใบเสร็จรับเงิน/ใบกำกับภาษี" : "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ",
+				deposit_amount:
+					newData.deposit_type === "deposit" ? parseFloat(newData.deposit_amount) || null : null,
+				doc_title:
+					newData.doc_title || requireCustomer
+						? "ใบเสร็จรับเงิน/ใบกำกับภาษี"
+						: "ใบเสร็จรับเงิน/ใบกำกับภาษีอย่างย่อ",
 			};
 
 			const res = await fetchApi(`${config.url}/Billing/createBilling`, {
@@ -683,56 +693,91 @@ const BillingNoteFormModal = ({
 									{/* Show deposit info badge when invoice is selected */}
 									{sourceType === "invoice" && formData.invoice_id && (
 										<div className="mt-2">
-											{formData.deposit_type === "deposit" ? (() => {
-												const depAmt = parseFloat(formData.deposit_amount || 0);
-												let depVat = 0;
-												let depNet = depAmt;
-												if (formData.vatType === "included-vat") {
-													depVat = (depAmt * 7) / 107;
-												} else if (formData.vatType === "excluded-vat") {
-													depVat = depAmt * 0.07;
-													depNet = depAmt + depVat;
-												}
-												return (
-													<div className="alert alert-warning py-2 mb-0 d-flex flex-column gap-1">
-														<div className="d-flex align-items-center gap-2">
-															<span className="badge bg-warning text-dark">ใบแจ้งหนี้ค่ามัดจำ</span>
-															<span>PDF ใบเสร็จจะเป็น <strong>ใบเสร็จของยอดค่ามัดจำ</strong></span>
+											{formData.deposit_type === "deposit" ? (
+												(() => {
+													const depAmt = parseFloat(formData.deposit_amount || 0);
+													let depVat = 0;
+													let depNet = depAmt;
+													if (formData.vatType === "included-vat") {
+														depVat = (depAmt * 7) / 107;
+													} else if (formData.vatType === "excluded-vat") {
+														depVat = depAmt * 0.07;
+														depNet = depAmt + depVat;
+													}
+													return (
+														<div className="alert alert-warning py-2 mb-0 d-flex flex-column gap-1">
+															<div className="d-flex align-items-center gap-2">
+																<span className="badge bg-warning text-dark">
+																	ใบแจ้งหนี้ค่ามัดจำ
+																</span>
+																<span>
+																	PDF ใบเสร็จจะเป็น <strong>ใบเสร็จของยอดค่ามัดจำ</strong>
+																</span>
+															</div>
+															<div className="text-dark small mt-1">
+																ยอดมัดจำ:{" "}
+																<strong>
+																	{depAmt.toLocaleString("th-TH", { minimumFractionDigits: 2 })} บาท
+																</strong>
+																{(formData.vatType === "included-vat" ||
+																	formData.vatType === "excluded-vat") && (
+																	<>
+																		<span className="mx-2">|</span>
+																		ภาษี (7%):{" "}
+																		<strong>
+																			{depVat.toLocaleString("th-TH", { minimumFractionDigits: 2 })}{" "}
+																			บาท
+																		</strong>
+																		<span className="mx-2">|</span>
+																		ราคาสุทธิ:{" "}
+																		<strong>
+																			{depNet.toLocaleString("th-TH", { minimumFractionDigits: 2 })}{" "}
+																			บาท
+																		</strong>
+																	</>
+																)}
+															</div>
 														</div>
-														<div className="text-dark small mt-1">
-															ยอดมัดจำ: <strong>{depAmt.toLocaleString("th-TH", { minimumFractionDigits: 2 })} บาท</strong>
-															{(formData.vatType === "included-vat" || formData.vatType === "excluded-vat") && (
-																<>
-																	<span className="mx-2">|</span>
-																	ภาษี (7%): <strong>{depVat.toLocaleString("th-TH", { minimumFractionDigits: 2 })} บาท</strong>
-																	<span className="mx-2">|</span>
-																	ราคาสุทธิ: <strong>{depNet.toLocaleString("th-TH", { minimumFractionDigits: 2 })} บาท</strong>
-																</>
-															)}
-														</div>
-													</div>
-												);
-											})() : (
+													);
+												})()
+											) : (
 												<div className="alert alert-info py-2 mb-0 d-flex align-items-center gap-2">
-													<span className="badge bg-info text-dark">ใบแจ้งหนี้ยอดเต็ม/ยอดคงเหลือหลังหักมัดจำ</span>
-													<span>PDF ใบเสร็จจะเป็น <strong>ใบเสร็จยอดเต็ม หรือ ใบเสร็จยอดคงเหลือหลังหักมัดจำ</strong></span>
+													<span className="badge bg-info text-dark">
+														ใบแจ้งหนี้ยอดเต็ม/ยอดคงเหลือหลังหักมัดจำ
+													</span>
+													<span>
+														PDF ใบเสร็จจะเป็น{" "}
+														<strong>ใบเสร็จยอดเต็ม หรือ ใบเสร็จยอดคงเหลือหลังหักมัดจำ</strong>
+													</span>
 												</div>
 											)}
 
 											{/* Deposit Summary Box for Invoice */}
-											{loadingDeposit && <div className="text-muted small mt-2">กำลังโหลดข้อมูลมัดจำ...</div>}
-											{depositSummary && !loadingDeposit && formData.deposit_type === "full" && depositSummary.total_deposit_paid > 0 && (
-												<div className="mt-2 p-2 bg-light rounded border">
-													<div className="row text-sm">
-														<div className="col-6">ยอดรวมใบเสนอราคา:</div>
-														<div className="col-6 text-end fw-bold">{parseFloat(depositSummary.total_amount).toLocaleString()} บาท</div>
-														<div className="col-6 text-warning">มัดจำที่จ่ายแล้ว (ใบเสร็จ):</div>
-														<div className="col-6 text-end text-warning fw-bold">-{parseFloat(depositSummary.total_deposit_paid).toLocaleString()} บาท</div>
-														<div className="col-6 text-success fw-bold">ยอดคงเหลือ:</div>
-														<div className="col-6 text-end text-success fw-bold">{parseFloat(depositSummary.remaining_balance).toLocaleString()} บาท</div>
-													</div>
-												</div>
+											{loadingDeposit && (
+												<div className="text-muted small mt-2">กำลังโหลดข้อมูลมัดจำ...</div>
 											)}
+											{depositSummary &&
+												!loadingDeposit &&
+												formData.deposit_type === "full" &&
+												depositSummary.total_deposit_paid > 0 && (
+													<div className="mt-2 p-2 bg-light rounded border">
+														<div className="row text-sm">
+															<div className="col-6">ยอดรวมใบเสนอราคา:</div>
+															<div className="col-6 text-end fw-bold">
+																{parseFloat(depositSummary.total_amount).toLocaleString()} บาท
+															</div>
+															<div className="col-6 text-warning">มัดจำที่จ่ายแล้ว (ใบเสร็จ):</div>
+															<div className="col-6 text-end text-warning fw-bold">
+																-{parseFloat(depositSummary.total_deposit_paid).toLocaleString()}{" "}
+																บาท
+															</div>
+															<div className="col-6 text-success fw-bold">ยอดคงเหลือ:</div>
+															<div className="col-6 text-end text-success fw-bold">
+																{parseFloat(depositSummary.remaining_balance).toLocaleString()} บาท
+															</div>
+														</div>
+													</div>
+												)}
 										</div>
 									)}
 
@@ -742,32 +787,62 @@ const BillingNoteFormModal = ({
 											<div className="card border-primary">
 												<div className="card-body py-3">
 													<label className="form-label fw-bold">ประเภทใบเสร็จ:</label>
-													<div className="d-flex gap-3 mb-3">
-														<div className="form-check">
-															<input
-																className="form-check-input"
-																type="radio"
-																name="deposit_type"
-																id="bdt_full"
-																value="full"
-																checked={formData.deposit_type === "full"}
-																onChange={handleInputChange}
-															/>
-															<label className="form-check-label" htmlFor="bdt_full">ยอดเต็ม</label>
+													{loadingDeposit ? (
+														<div> กำลังโหลดข้อมูลมัดจำ...</div>
+													) : (
+														<div className="d-flex gap-3 mb-3">
+															{depositSummary?.total_deposit_paid > 0 ? (
+																<div className="form-check">
+																	<input
+																		className="form-check-input"
+																		type="radio"
+																		name="deposit_type"
+																		id="bdt_remaining"
+																		value="full"
+																		checked={formData.deposit_type === "full"}
+																		onChange={handleInputChange}
+																	/>
+																	<label
+																		className="form-check-label text-success fw-bold"
+																		htmlFor="bdt_remaining"
+																	>
+																		ยอดคงเหลือ
+																	</label>
+																</div>
+															) : (
+																<>
+																	<div className="form-check">
+																		<input
+																			className="form-check-input"
+																			type="radio"
+																			name="deposit_type"
+																			id="bdt_full"
+																			value="full"
+																			checked={formData.deposit_type === "full"}
+																			onChange={handleInputChange}
+																		/>
+																		<label className="form-check-label" htmlFor="bdt_full">
+																			ยอดเต็ม
+																		</label>
+																	</div>
+																	<div className="form-check">
+																		<input
+																			className="form-check-input"
+																			type="radio"
+																			name="deposit_type"
+																			id="bdt_deposit"
+																			value="deposit"
+																			checked={formData.deposit_type === "deposit"}
+																			onChange={handleInputChange}
+																		/>
+																		<label className="form-check-label" htmlFor="bdt_deposit">
+																			ค่ามัดจำ
+																		</label>
+																	</div>
+																</>
+															)}
 														</div>
-														<div className="form-check">
-															<input
-																className="form-check-input"
-																type="radio"
-																name="deposit_type"
-																id="bdt_deposit"
-																value="deposit"
-																checked={formData.deposit_type === "deposit"}
-																onChange={handleInputChange}
-															/>
-															<label className="form-check-label" htmlFor="bdt_deposit">ค่ามัดจำ</label>
-														</div>
-													</div>
+													)}
 
 													{/* Deposit Amount & Percent Inputs */}
 													{formData.deposit_type === "deposit" && (
@@ -811,19 +886,67 @@ const BillingNoteFormModal = ({
 														</div>
 													)}
 
-													{loadingDeposit && <div className="text-muted small">กำลังโหลดข้อมูลมัดจำ...</div>}
+													{loadingDeposit && (
+														<div className="text-muted small">กำลังโหลดข้อมูลมัดจำ...</div>
+													)}
 													{depositSummary && !loadingDeposit && (
 														<div className="mt-2 p-2 bg-light rounded border">
 															<div className="row text-sm">
 																<div className="col-6">ยอดรวมใบเสนอราคา:</div>
-																<div className="col-6 text-end fw-bold">{parseFloat(depositSummary.total_amount).toLocaleString()} บาท</div>
-																<div className="col-6 text-warning">มัดจำที่จ่ายแล้ว (ใบเสร็จ):</div>
-																<div className="col-6 text-end text-warning fw-bold">-{parseFloat(depositSummary.total_deposit_paid).toLocaleString()} บาท</div>
+																<div className="col-6 text-end fw-bold">
+																	{parseFloat(depositSummary.total_amount).toLocaleString()} บาท
+																</div>
+																{depositSummary.total_deposit_invoiced >
+																depositSummary.total_deposit_paid ? (
+																	<>
+																		<div className="col-6 text-danger">มัดจำที่รอชำระ:</div>
+																		<div className="col-6 text-end text-danger fw-bold">
+																			-
+																			{parseFloat(
+																				depositSummary.total_deposit_invoiced -
+																					depositSummary.total_deposit_paid
+																			).toLocaleString()}{" "}
+																			บาท
+																		</div>
+																	</>
+																) : (
+																	<>
+																		<div className="col-6 text-warning">มัดจำที่จ่ายแล้ว :</div>
+																		<div className="col-6 text-end text-warning fw-bold">
+																			-
+																			{parseFloat(
+																				depositSummary.total_deposit_paid
+																			).toLocaleString()}{" "}
+																			บาท
+																		</div>
+																	</>
+																)}
+
 																<div className="col-6 text-success fw-bold">ยอดคงเหลือ:</div>
-																<div className="col-6 text-end text-success fw-bold">{parseFloat(depositSummary.remaining_balance).toLocaleString()} บาท</div>
+																<div className="col-6 text-end text-success fw-bold">
+																	{parseFloat(
+																		depositSummary.remaining_balance -
+																			(depositSummary.total_deposit_invoiced -
+																				depositSummary.total_deposit_paid >
+																			0
+																				? depositSummary.total_deposit_invoiced -
+																					depositSummary.total_deposit_paid
+																				: 0)
+																	).toLocaleString()}{" "}
+																	บาท
+																</div>
 															</div>
 														</div>
 													)}
+													{depositSummary &&
+														!loadingDeposit &&
+														depositSummary.total_deposit_invoiced >
+															depositSummary.total_deposit_paid && (
+															<div className="text-danger mt-2" style={{ fontSize: "10px" }}>
+																<strong>มัดจำที่รอชำระ</strong> หมายถึง ยอดมัดจำที่ออกใบแจ้งหนี้แล้ว
+																แต่ยังไม่ได้ออกใบเสร็จรับเงิน
+															</div>
+														)}
 												</div>
 											</div>
 										</div>
@@ -935,7 +1058,12 @@ const BillingNoteFormModal = ({
 							<div className="mb-3">
 								<label className="form-label d-flex justify-content-between">
 									<span>รายการสินค้า</span>
-									<button type="button" className="btn btn-sm btn-primary" onClick={addProductRow} disabled={sourceType !== "none"}>
+									<button
+										type="button"
+										className="btn btn-sm btn-primary"
+										onClick={addProductRow}
+										disabled={sourceType !== "none"}
+									>
 										+ เพิ่มสินค้า
 									</button>
 								</label>

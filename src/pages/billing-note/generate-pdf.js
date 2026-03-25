@@ -235,8 +235,14 @@ export const generatePDF = async (
 	const isIncludedVat = row.vatType === "included-vat";
 
 	// ใช้ grand_total ที่คำนวณและเก็บไว้แล้วจากฟอร์ม (ถ้ามี) เพื่อป้องกันความคลาดเคลื่อนของทศนิยม
-	const storedGrandTotal = parseFloat(row.grand_total) || 0;
-	const storedVat = parseFloat(row.vat) || 0;
+	let storedGrandTotal = parseFloat(row.grand_total) || 0;
+	let storedVat = parseFloat(row.vat) || 0;
+
+	// หากเป็นบิลค่ามัดจำ ให้ละเว้นข้อมูล VAT และ Grand Total ที่ติดมา เพราะมักจะเป็นของยอดเต็ม
+	if (row.deposit_type === "deposit") {
+		storedGrandTotal = 0;
+		storedVat = 0;
+	}
 
 	if (row.vatType === "included-vat") {
 		// Price includes VAT: show ex-VAT as subtotal
