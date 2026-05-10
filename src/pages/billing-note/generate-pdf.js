@@ -97,7 +97,7 @@ export const generatePDF = async (
 	const displayDate = `${day}/${month}/${buddhistYear}`;
 
 	// Header Section
-	const renderHeader = () => {
+	const renderHeader = (copyLabel = "ต้นฉบับ") => {
 		// Logo
 		if (bData?.bus_logo) {
 			try {
@@ -139,10 +139,12 @@ export const generatePDF = async (
 		}
 		doc.text(titleText, 170, 22, { align: "center" });
 
-		// Original mark
+		// Original / Copy mark
 		doc.setTextColor(255, 0, 0);
 		doc.setFontSize(18);
-		doc.text("ต้นฉบับ", 170, 50, { align: "center" });
+		doc.text(copyLabel, 170, 46, { align: "center" });
+		doc.setFontSize(9);
+		doc.text("(เอกสารออกเป็นชุด)", 170, 50, { align: "center" });
 		doc.setTextColor(0, 0, 0);
 	};
 
@@ -251,7 +253,11 @@ export const generatePDF = async (
 	}
 
 	// Manual rounding adjustment for HDIN2603-08
-	if (row.invoice_number === "HDIN2603-08" || row.billing === "HDIN2603-08" || row.billing_number === "HDIN2603-08") {
+	if (
+		row.invoice_number === "HDIN2603-08" ||
+		row.billing === "HDIN2603-08" ||
+		row.billing_number === "HDIN2603-08"
+	) {
 		netAmount = Math.round(netAmount);
 	}
 
@@ -340,8 +346,8 @@ export const generatePDF = async (
 			finalY + 5,
 			"เงินโอน",
 			row.payment_method === "เงินโอน" ||
-			row.payments === "MobileBank" ||
-			row.payments === "เงินโอน"
+				row.payments === "MobileBank" ||
+				row.payments === "เงินโอน"
 		);
 		drawCheckbox(
 			125,
@@ -434,14 +440,16 @@ export const generatePDF = async (
 		}
 	};
 
-	// Render Document
-	renderHeader();
+	// Render Document — ต้นฉบับ
+	renderHeader("ต้นฉบับ");
 	renderSectionBoxes();
 	// Table
 	let tableData = [];
 
 	if (row.deposit_type === "deposit") {
-		const origTotal = parseFloat(row.sale_totalprice || row.total_price || row.total_grand || 0) || products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
+		const origTotal =
+			parseFloat(row.sale_totalprice || row.total_price || row.total_grand || 0) ||
+			products.reduce((sum, item) => sum + (parseFloat(item.sale_price) || 0), 0);
 		const depositAmt = parseFloat(row.deposit_amount) || 0;
 		const pct = origTotal > 0 ? Math.round((depositAmt / origTotal) * 100) : 0;
 
@@ -452,12 +460,15 @@ export const generatePDF = async (
 
 		let description = `มัดจำค่าติดตั้งป้าย ${pct}% ก่อนเริ่มงาน`;
 
-		products.forEach(item => {
+		products.forEach((item) => {
 			const productDef = productQuery?.find(
 				(p) => p.productID === item.productID || p.productname === item.productname
 			);
 			const pName = item.productName || item.productname || productDef?.productname || "";
-			const pPrice = parseFloat(item.sale_price || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+			const pPrice = parseFloat(item.sale_price || 0).toLocaleString("en-US", {
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2,
+			});
 			description += `\n${pName}                                ${pPrice}`;
 		});
 		description += `\n\nรวมราคาตามใบเสนอราคา                 ${origTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -470,7 +481,7 @@ export const generatePDF = async (
 				"1",
 				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 				depositAmt.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-			]
+			],
 		];
 	} else {
 		const totalDeposited = parseFloat(row.total_deposited) || 0;
@@ -486,7 +497,7 @@ export const generatePDF = async (
 
 			let unitPrice;
 			if (isIncludedVat) {
-				unitPrice = (salePrice / qty) / 1.07;
+				unitPrice = salePrice / qty / 1.07;
 			} else {
 				unitPrice = parseFloat(item.price || productDef?.price || salePrice / qty || 0);
 			}
@@ -495,9 +506,9 @@ export const generatePDF = async (
 			return [
 				index + 1,
 				productName +
-				(item.description || item.product_detail
-					? "\n" + (item.description || item.product_detail)
-					: ""),
+					(item.description || item.product_detail
+						? "\n" + (item.description || item.product_detail)
+						: ""),
 				qty.toLocaleString(),
 				unitPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
 				lineTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
@@ -512,7 +523,13 @@ export const generatePDF = async (
 			} else if (row.quotation_num && !row.quotation_num.includes("QT-AUTO")) {
 				depositRefText += ` (QN: ${row.quotation_num})`;
 			}
-			tableData.push(["", depositRefText, "", "", `-${totalDeposited.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`]);
+			tableData.push([
+				"",
+				depositRefText,
+				"",
+				"",
+				`-${totalDeposited.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+			]);
 		}
 	}
 
@@ -545,7 +562,7 @@ export const generatePDF = async (
 		},
 		margin: { top: 110, left: 10, right: 10, bottom: 20 },
 		didDrawPage: function () {
-			renderHeader();
+			renderHeader("ต้นฉบับ");
 			renderSectionBoxes();
 		},
 		tableLineColor: blueColor,
@@ -554,13 +571,62 @@ export const generatePDF = async (
 
 	renderFooter(doc.lastAutoTable.finalY);
 
+	const originalPageCount = doc.internal.getNumberOfPages();
+
+	// ===== สำเนา =====
+	doc.addPage();
+	renderHeader("สำเนา");
+	renderSectionBoxes();
+
+	autoTable(doc, {
+		startY: 110,
+		head: [["ลำดับที่", "รายการ", "จำนวน", "ราคา/หน่วย", "จำนวนเงิน"]],
+		body: tableData,
+		theme: "grid",
+		styles: {
+			font: "THSarabunNew",
+			fontSize: 13,
+			cellPadding: 2,
+			halign: "center",
+			valign: "middle",
+		},
+		headStyles: {
+			fillColor: [255, 255, 255],
+			textColor: [0, 0, 0],
+			lineWidth: 0.1,
+			halign: "center",
+			font: "THSarabunNew",
+			fontStyle: "normal",
+		},
+		columnStyles: {
+			0: { cellWidth: 15 },
+			1: { cellWidth: 95, halign: "left" },
+			2: { cellWidth: 20 },
+			3: { cellWidth: 28, halign: "right" },
+			4: { cellWidth: 32, halign: "right" },
+		},
+		margin: { top: 110, left: 10, right: 10, bottom: 20 },
+		didDrawPage: function () {
+			renderHeader("สำเนา");
+			renderSectionBoxes();
+		},
+		tableLineColor: blueColor,
+		tableLineWidth: 0.1,
+	});
+
+	renderFooter(doc.lastAutoTable.finalY);
+
+	// Page numbering for all pages
 	const totalPages = doc.internal.getNumberOfPages();
-	if (totalPages > 1) {
-		for (let i = 1; i <= totalPages; i++) {
-			doc.setPage(i);
-			doc.setFont("THSarabunNew", "normal");
-			doc.setFontSize(12);
-			doc.text(`หน้า ${i} / ${totalPages}`, 195, 15, { align: "right" });
+	for (let i = 1; i <= totalPages; i++) {
+		doc.setPage(i);
+		doc.setFont("THSarabunNew", "normal");
+		doc.setFontSize(12);
+		const copySet = i <= originalPageCount ? "ต้นฉบับ" : "สำเนา";
+		const pageInSet = i <= originalPageCount ? i : i - originalPageCount;
+		const pagesInSet = i <= originalPageCount ? originalPageCount : totalPages - originalPageCount;
+		if (totalPages > 2) {
+			doc.text(`[${copySet}] หน้า ${pageInSet} / ${pagesInSet}`, 195, 15, { align: "right" });
 		}
 	}
 
