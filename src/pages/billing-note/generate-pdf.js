@@ -267,7 +267,7 @@ export const generatePDF = async (
 		netAmount = Math.round(netAmount);
 	}
 
-	const renderFooter = (lastY) => {
+	const renderFooter = (lastY, copyLabel = "ต้นฉบับ") => {
 		let finalY = lastY + 2;
 		const summaryX = 142;
 		const summaryW = 58;
@@ -276,7 +276,7 @@ export const generatePDF = async (
 		// Billing note footer is quite tall due to payment details & signatures (~105 units)
 		if (finalY + 105 > pageHeight) {
 			doc.addPage();
-			renderHeader();
+			renderHeader(copyLabel);
 			renderSectionBoxes();
 			finalY = 110;
 		}
@@ -575,7 +575,7 @@ export const generatePDF = async (
 		tableLineWidth: 0.1,
 	});
 
-	renderFooter(doc.lastAutoTable.finalY);
+	renderFooter(doc.lastAutoTable.finalY, "ต้นฉบับ");
 
 	const originalPageCount = doc.internal.getNumberOfPages();
 
@@ -620,7 +620,7 @@ export const generatePDF = async (
 		tableLineWidth: 0.1,
 	});
 
-	renderFooter(doc.lastAutoTable.finalY);
+	renderFooter(doc.lastAutoTable.finalY, "สำเนา");
 
 	// Page numbering for all pages
 	const totalPages = doc.internal.getNumberOfPages();
