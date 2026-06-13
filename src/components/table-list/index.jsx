@@ -242,20 +242,22 @@ const TableList = ({
 			</div>
 
 			<div className="d-flex justify-content-between align-items-center mt-3">
-				<div>
-					แสดง
-					{[20, 50, 100].map((opt) => (
-						<button
-							key={opt}
-							className={`btn btn-sm mx-1 ${rowsPerPage === opt ? "btn-primary" : "btn-outline-secondary"}`}
-							onClick={() => {
-								setRowsPerPage(opt);
-								setCurrentPage(1);
-							}}
-						>
-							{opt}
-						</button>
-					))}
+				<div className="d-flex align-items-center">
+					<span className="me-2">แสดง</span>
+					<select
+						className="form-select form-select-sm w-auto"
+						value={rowsPerPage}
+						onChange={(e) => {
+							setRowsPerPage(Number(e.target.value));
+							setCurrentPage(1);
+						}}
+					>
+						{[20, 50, 100, 500, 1000].map((opt) => (
+							<option key={opt} value={opt}>
+								{opt}
+							</option>
+						))}
+					</select>
 				</div>
 
 				{totalPages > 1 && (
